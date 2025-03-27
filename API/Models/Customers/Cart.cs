@@ -107,20 +107,5 @@ namespace API.Models.Customers
             UpdatedAt = DateTime.UtcNow;
         }
     }
-
-    /// <summary>
-    /// Represents an item in the cart with its quantity.
-    /// </summary>
-    public class CartItem
-    {
-        /// <summary>
-        /// Gets or sets the item.
-        /// </summary>
-        public Item Item { get; set; } = null!;
-
-        /// <summary>
-        /// Gets or sets the quantity of the item.
-        /// </summary>
-        public int Quantity { get; set; }
-    }
+    
 }

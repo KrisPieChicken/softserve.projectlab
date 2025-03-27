@@ -1,15 +1,24 @@
-﻿using API.Models.Customers;
+﻿using API.Data;
+using API.Models.Customers;
 using API.Services.Customers;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Implementations.Domain.Customers;
 
 /// <summary>
-/// Implementation of the ICustomerService interface.
+/// Implementation of the ICustomerService interface using Entity Framework.
 /// </summary>
 public class CustomerService : ICustomerService
 {
-    // In a real application, this would be replaced with a database repository
-    private readonly List<Customer> _customers = new();
+    private readonly ApplicationDbContext _context;
+
+    /// <summary>
+    /// Initializes a new instance of the CustomerService class.
+    /// </summary>
+    public CustomerService(ApplicationDbContext context)
+    {
+        _context = context;
+    }
 
     /// <summary>
     /// Gets all customers.
@@ -17,9 +26,7 @@ public class CustomerService : ICustomerService
     /// <returns>A collection of all customers.</returns>
     public async Task<IEnumerable<Customer>> GetAllCustomersAsync()
     {
-        // Simulate async operation
-        await Task.CompletedTask;
-        return _customers;
+        return await _context.Customers.ToListAsync();
     }
 
     /// <summary>
@@ -29,8 +36,9 @@ public class CustomerService : ICustomerService
     /// <returns>The customer if found; otherwise, null.</returns>
     public async Task<Customer?> GetCustomerByIdAsync(string id)
     {
-        await Task.CompletedTask;
-        return _customers.FirstOrDefault(c => c.Id == id);
+        return await _context.Customers
+            .Include(c => c.LineOfCredit)
+            .FirstOrDefaultAsync(c => c.Id == id);
     }
 
     /// <summary>
@@ -40,13 +48,11 @@ public class CustomerService : ICustomerService
     /// <returns>A collection of customers of the specified type.</returns>
     public async Task<IEnumerable<Customer>> GetCustomersByTypeAsync(string customerType)
     {
-        await Task.CompletedTask;
-
         return customerType.ToLower() switch
         {
-            "premium" => _customers.Where(c => c is PremiumCustomer),
-            "business" => _customers.Where(c => c is BusinessCustomer),
-            "individual" => _customers.Where(c => c is IndividualCustomer),
+            "premium" => await _context.Customers.OfType<PremiumCustomer>().ToListAsync(),
+            "business" => await _context.Customers.OfType<BusinessCustomer>().ToListAsync(),
+            "individual" => await _context.Customers.OfType<IndividualCustomer>().ToListAsync(),
             _ => Enumerable.Empty<Customer>()
         };
     }
@@ -58,15 +64,14 @@ public class CustomerService : ICustomerService
     /// <returns>The created customer.</returns>
     public async Task<Customer> CreateCustomerAsync(Customer customer)
     {
-        await Task.CompletedTask;
-        
         // Ensure the customer has an ID
         if (string.IsNullOrEmpty(customer.Id))
         {
             customer.Id = Guid.NewGuid().ToString();
         }
         
-        _customers.Add(customer);
+        _context.Customers.Add(customer);
+        await _context.SaveChangesAsync();
         return customer;
     }
 
@@ -78,22 +83,32 @@ public class CustomerService : ICustomerService
     /// <returns>The updated customer if found; otherwise, null.</returns>
     public async Task<Customer?> UpdateCustomerAsync(string id, Customer customer)
     {
-        await Task.CompletedTask;
-        
-        var existingCustomer = _customers.FirstOrDefault(c => c.Id == id);
+        var existingCustomer = await _context.Customers.FindAsync(id);
         if (existingCustomer == null)
         {
             return null;
         }
         
-        // Update properties
-        // In a real application, you would use a mapping library or manually update each property
-        // For simplicity, we'll just replace the customer
-        customer.Id = id; // Ensure the ID remains the same
-        _customers.Remove(existingCustomer);
-        _customers.Add(customer);
-        
-        return customer;
+        // Update properties depending on the type of customer
+        if (existingCustomer is BusinessCustomer existingBusiness && customer is BusinessCustomer updatedBusiness)
+        {
+            _context.Entry(existingBusiness).CurrentValues.SetValues(updatedBusiness);
+        }
+        else if (existingCustomer is IndividualCustomer existingIndividual && customer is IndividualCustomer updatedIndividual)
+        {
+            _context.Entry(existingIndividual).CurrentValues.SetValues(updatedIndividual);
+        }
+        else if (existingCustomer is PremiumCustomer existingPremium && customer is PremiumCustomer updatedPremium)
+        {
+            _context.Entry(existingPremium).CurrentValues.SetValues(updatedPremium);
+        }
+        else
+        {
+            _context.Entry(existingCustomer).CurrentValues.SetValues(customer);
+        }
+
+        await _context.SaveChangesAsync();
+        return existingCustomer;
     }
 
     /// <summary>
@@ -103,15 +118,15 @@ public class CustomerService : ICustomerService
     /// <returns>True if the customer was deleted; otherwise, false.</returns>
     public async Task<bool> DeleteCustomerAsync(string id)
     {
-        await Task.CompletedTask;
-        
-        var customer = _customers.FirstOrDefault(c => c.Id == id);
+        var customer = await _context.Customers.FindAsync(id);
         if (customer == null)
         {
             return false;
         }
         
-        return _customers.Remove(customer);
+        _context.Customers.Remove(customer);
+        await _context.SaveChangesAsync();
+        return true;
     }
 
     /// <summary>
@@ -122,13 +137,16 @@ public class CustomerService : ICustomerService
     /// <returns>The created line of credit.</returns>
     public async Task<LineOfCredit> CreateLineOfCreditAsync(string customerId, LineOfCredit lineOfCredit)
     {
-        var customer = await GetCustomerByIdAsync(customerId);
+        var customer = await _context.Customers.FindAsync(customerId);
         if (customer == null)
         {
             throw new KeyNotFoundException($"Customer with ID {customerId} not found.");
         }
         
-        customer.LineOfCredit = lineOfCredit;
+        lineOfCredit.CustomerId = customerId;
+        _context.LineOfCredits.Add(lineOfCredit);
+        await _context.SaveChangesAsync();
+        
         return lineOfCredit;
     }
 
@@ -139,7 +157,10 @@ public class CustomerService : ICustomerService
     /// <returns>The customer's line of credit if found; otherwise, null.</returns>
     public async Task<LineOfCredit?> GetLineOfCreditAsync(string customerId)
     {
-        var customer = await GetCustomerByIdAsync(customerId);
+        var customer = await _context.Customers
+            .Include(c => c.LineOfCredit)
+            .FirstOrDefaultAsync(c => c.Id == customerId);
+            
         return customer?.LineOfCredit;
     }
 
@@ -151,19 +172,23 @@ public class CustomerService : ICustomerService
     /// <returns>The updated line of credit if found; otherwise, null.</returns>
     public async Task<LineOfCredit?> UpdateLineOfCreditAsync(string customerId, LineOfCredit lineOfCredit)
     {
-        var customer = await GetCustomerByIdAsync(customerId);
-        if (customer == null || customer.LineOfCredit == null)
+        var existingLineOfCredit = await _context.LineOfCredits
+            .FirstOrDefaultAsync(loc => loc.CustomerId == customerId);
+            
+        if (existingLineOfCredit == null)
         {
             return null;
         }
         
-        // Preserve the ID
-        lineOfCredit.Id = customer.LineOfCredit.Id;
+        // Preserve the ID and CustomerId
+        lineOfCredit.Id = existingLineOfCredit.Id;
+        lineOfCredit.CustomerId = customerId;
         
         // Update the line of credit
-        customer.LineOfCredit = lineOfCredit;
+        _context.Entry(existingLineOfCredit).CurrentValues.SetValues(lineOfCredit);
+        await _context.SaveChangesAsync();
         
-        return lineOfCredit;
+        return existingLineOfCredit;
     }
 
     /// <summary>
@@ -173,17 +198,15 @@ public class CustomerService : ICustomerService
     /// <returns>A collection of customers matching the search criteria.</returns>
     public async Task<IEnumerable<Customer>> SearchCustomersAsync(string searchTerm)
     {
-        await Task.CompletedTask;
-        
         searchTerm = searchTerm.ToLower();
         
-        return _customers.Where(c => 
-            c.FirstName.ToLower().Contains(searchTerm) || 
-            c.LastName.ToLower().Contains(searchTerm) || 
-            c.Email.ToLower().Contains(searchTerm) || 
-            c.PhoneNumber.ToLower().Contains(searchTerm) ||
-            c.GetFullName().ToLower().Contains(searchTerm)
-        );
+        return await _context.Customers
+            .Where(c => c.FirstName.ToLower().Contains(searchTerm) || 
+                c.LastName.ToLower().Contains(searchTerm) || 
+                c.Email.ToLower().Contains(searchTerm) || 
+                c.PhoneNumber.ToLower().Contains(searchTerm) ||
+                (c.FirstName + " " + c.LastName).ToLower().Contains(searchTerm))
+            .ToListAsync();
     }
 
     /// <summary>
@@ -193,8 +216,11 @@ public class CustomerService : ICustomerService
     /// <returns>A collection of credit transactions if found; otherwise, null.</returns>
     public async Task<IEnumerable<CreditTransaction>?> GetCreditTransactionHistoryAsync(string customerId)
     {
-        var lineOfCredit = await GetLineOfCreditAsync(customerId);
-        return lineOfCredit?.GetTransactionHistory();
+        var lineOfCredit = await _context.LineOfCredits
+            .Include(loc => loc.Transactions)
+            .FirstOrDefaultAsync(loc => loc.CustomerId == customerId);
+            
+        return lineOfCredit?.Transactions;
     }
 
     /// <summary>
@@ -206,13 +232,29 @@ public class CustomerService : ICustomerService
     /// <returns>The updated line of credit if found; otherwise, null.</returns>
     public async Task<LineOfCredit?> MakePaymentAsync(string customerId, decimal amount, string? description = null)
     {
-        var lineOfCredit = await GetLineOfCreditAsync(customerId);
+        var lineOfCredit = await _context.LineOfCredits
+            .Include(loc => loc.Transactions)
+            .FirstOrDefaultAsync(loc => loc.CustomerId == customerId);
+            
         if (lineOfCredit == null)
         {
             return null;
         }
         
-        lineOfCredit.Deposit(amount, description ?? "Payment");
+        // Crear nueva transacción
+        var transaction = new CreditTransaction
+        {
+            TransactionType = "Payment",
+            Amount = amount,
+            Description = description ?? "Payment",
+            TransactionDate = DateTime.UtcNow,
+            LineOfCreditId = lineOfCredit.Id,
+            LineOfCredit = lineOfCredit
+        };
+        
+        lineOfCredit.Transactions.Add(transaction);
+        await _context.SaveChangesAsync();
+        
         return lineOfCredit;
     }
 
@@ -225,13 +267,39 @@ public class CustomerService : ICustomerService
     /// <returns>The updated line of credit if found; otherwise, null.</returns>
     public async Task<LineOfCredit?> MakeChargeAsync(string customerId, decimal amount, string? description = null)
     {
-        var lineOfCredit = await GetLineOfCreditAsync(customerId);
+        var lineOfCredit = await _context.LineOfCredits
+            .Include(loc => loc.Transactions)
+            .FirstOrDefaultAsync(loc => loc.CustomerId == customerId);
+            
         if (lineOfCredit == null)
         {
             return null;
         }
         
-        lineOfCredit.Withdraw(amount, description ?? "Purchase");
+        // Verificar si hay suficiente crédito disponible
+        decimal balance = await _context.CreditTransactions
+            .Where(t => t.LineOfCreditId == lineOfCredit.Id)
+            .SumAsync(t => t.TransactionType == "Payment" ? -t.Amount : t.Amount);
+            
+        if (lineOfCredit.CreditLimit - balance < amount)
+        {
+            throw new InvalidOperationException("Insufficient available credit");
+        }
+        
+        // Crear nueva transacción
+        var transaction = new CreditTransaction
+        {
+            TransactionType = "Charge",
+            Amount = amount,
+            Description = description ?? "Purchase",
+            TransactionDate = DateTime.UtcNow,
+            LineOfCreditId = lineOfCredit.Id,
+            LineOfCredit = lineOfCredit
+        };
+        
+        lineOfCredit.Transactions.Add(transaction);
+        await _context.SaveChangesAsync();
+        
         return lineOfCredit;
     }
 }
