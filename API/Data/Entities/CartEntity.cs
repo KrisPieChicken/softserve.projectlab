@@ -6,8 +6,10 @@ namespace API.Data.Entities;
 public partial class CartEntity
 {
     public int CartId { get; set; }
+    public int CustomerId { get; set; }
+    public virtual CustomerEntity Customer { get; set; } = null!;
 
-    public int? CustomerId { get; set; }
-
-    public virtual CustomerEntity? Customer { get; set; }
+    public virtual ICollection<CartItemEntity> CartItems { get; set; } = new List<CartItemEntity>();
 }
+
+

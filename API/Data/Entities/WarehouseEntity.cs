@@ -6,14 +6,10 @@ namespace API.Data.Entities;
 public partial class WarehouseEntity
 {
     public int WarehouseId { get; set; }
+    public required string WarehouseLocation { get; set; }
+    public int WarehouseCapacity { get; set; }
 
-    public string? Location { get; set; }
-
-    public int? Capacity { get; set; }
-
-    public int? BranchId { get; set; }
-
-    public virtual BranchEntity? Branch { get; set; }
-
-    public virtual ICollection<WarehouseItemEntity> WarehouseItems { get; set; } = new List<WarehouseItemEntity>();
+    public int BranchId { get; set; }
+    public virtual BranchEntity Branch { get; set; } = null!;
+    public virtual ICollection<WarehouseItemEntity> WarehouseItemEntities { get; set; } = new List<WarehouseItemEntity>();
 }

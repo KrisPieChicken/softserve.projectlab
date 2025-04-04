@@ -6,12 +6,9 @@ namespace API.Data.Entities;
 public partial class UserRoleEntity
 {
     public int UserId { get; set; }
-
     public int RoleId { get; set; }
 
+    public string RoleName { get; set; } = null!;
+    public virtual UserEntity User { get; set; } = null!;
     public virtual RoleEntity Role { get; set; } = null!;
-
-    public virtual RolePermissionEntity RoleNavigation { get; set; } = null!;
-
-    public virtual UsersEntity User { get; set; } = null!;
 }

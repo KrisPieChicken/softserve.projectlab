@@ -6,13 +6,10 @@ namespace API.Data.Entities;
 public partial class CatalogEntity
 {
     public int CatalogId { get; set; }
+    public required string CatalogName { get; set; }
+    public required string CatalogDescription { get; set; }
+    public bool CatalogStatus { get; set; }
 
-    public string? Name { get; set; }
+    public virtual ICollection<CatalogCategoryEntity> CatalogCategoryEntities { get; set; } = new List<CatalogCategoryEntity>();
 
-    public string? Description { get; set; }
-
-    public bool? Status { get; set; }
-
-    // Navigation property to related items
-    public ICollection<CatalogCategoryEntity> CatalogCategories { get; set; }
 }

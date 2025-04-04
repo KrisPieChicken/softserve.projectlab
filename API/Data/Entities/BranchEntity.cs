@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace API.Data.Entities;
 
@@ -7,19 +6,19 @@ public partial class BranchEntity
 {
     public int BranchId { get; set; }
 
-    public string? Name { get; set; }
+    public required string BranchName { get; set; }
 
-    public string? City { get; set; }
+    public required string BranchCity { get; set; }
 
-    public string? Region { get; set; }
+    public required string BranchAddress { get; set; }
 
-    public string? ContactNumber { get; set; }
+    public required string BranchRegion { get; set; }
 
-    public string? ContactEmail { get; set; }
+    public required string BranchContactNumber { get; set; }
 
-    public string? Address { get; set; }
+    public required string BranchContactEmail { get; set; }
 
-    public virtual ICollection<UsersEntity> UsersEntities { get; set; } = new List<UsersEntity>();
+    public virtual ICollection<UserEntity> UsersEntities { get; set; } = new List<UserEntity>();
 
     public virtual ICollection<WarehouseEntity> WarehouseEntities { get; set; } = new List<WarehouseEntity>();
 }

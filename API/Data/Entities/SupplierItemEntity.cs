@@ -6,10 +6,9 @@ namespace API.Data.Entities;
 public partial class SupplierItemEntity
 {
     public int SupplierId { get; set; }
-
     public int Sku { get; set; }
-
-    public virtual ItemEntity SkuNavigation { get; set; } = null!;
+    public int ItemQuantity { get; set; }
 
     public virtual SupplierEntity Supplier { get; set; } = null!;
+    public virtual ItemEntity Item { get; set; } = null!;
 }
