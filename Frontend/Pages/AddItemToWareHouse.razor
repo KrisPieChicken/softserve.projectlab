@@ -1,0 +1,40 @@
+﻿@page "/add-item-to-warehouse"
+@using softserve.projectlabs.Shared.DTOs;
+@using softserve.projectlabs.Shared.Interfaces;
+
+<h3>Add Item to Warehouse</h3>
+
+<div>
+   <label for="itemName">Item Name:</label>
+   <input id="itemName" @bind="ItemName" />
+</div>
+
+<div>
+   <label for="quantity">Quantity:</label>
+   <input id="quantity" type="number" @bind="Quantity" />
+</div>
+
+<button @onclick="AddItem">Add Item</button>
+
+@if (Message != null)
+{
+   <p>@Message</p>
+}
+
+@code {
+   private string ItemName { get; set; }
+   private int Quantity { get; set; }
+   private string? Message { get; set; }
+
+   private void AddItem()
+   {
+       if (string.IsNullOrWhiteSpace(ItemName) || Quantity <= 0)
+       {
+           Message = "Please provide valid item details.";
+           return;
+       }
+
+       // Logic to add the item to the warehouse can be added here.
+       Message = $"Item '{ItemName}' with quantity {Quantity} added successfully.";
+   }
+}

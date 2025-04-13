@@ -1,7 +1,146 @@
 ﻿@page "/"
+@using softserve.projectlabs.Shared.DTOs
+@using softserve.projectlabs.Shared.Interfaces
+@using System.Text.Json
+@inject IHttpClientFactory HttpClientFactory
+@inject ILogger<Home> Logger
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Dashboard</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1 class="text-center my-4">Dashboard</h1>
 
-Welcome to your new app.
+<div class="container">
+    <div class="row">
+        <!-- Warehouses Section -->
+        <div class="col-md-6">
+            <h2 class="text-center">Warehouses</h2>
+            <div class="card">
+                <div class="card-body">
+                    @if (isLoading)
+                    {
+                        <div class="text-center">
+                            <p>Cargando almacenes...</p>
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    }
+                    else if (errorMessage != null)
+                    {
+                        <div class="alert alert-danger">
+                            <strong>Error:</strong> @errorMessage
+                            <button class="btn btn-sm btn-primary mt-2" @onclick="LoadWarehouses">Reintentar</button>
+                        </div>
+                    }
+                    else if (warehouses == null || !warehouses.Any())
+                    {
+                        <p>No se encontraron almacenes.</p>
+                        <button class="btn btn-sm btn-primary" @onclick="LoadWarehouses">Recargar</button>
+                    }
+                    else
+                    {
+                        <ul class="list-group">
+                            @foreach (var warehouse in warehouses)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>@warehouse.Name</strong> 
+                                        <div class="text-muted">@warehouse.Location</div>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">
+                                        Items: @(warehouse.Items?.Count ?? 0)
+                                    </span>
+                                </li>
+                            }
+                        </ul>
+                    }
+
+                    <div class="alert alert-info mt-3">
+                        API Base: @apiBaseAddress
+                        <p>Componente renderizado a las @DateTime.Now.ToString("HH:mm:ss.fff")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<WarehouseResponseDto> warehouses;
+    private bool isLoading = true;
+    private string errorMessage;
+    private string apiBaseAddress;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadWarehouses();
+    }
+
+    private async Task LoadWarehouses()
+    {
+        isLoading = true;
+        errorMessage = null;
+        warehouses = null;
+        StateHasChanged(); // Forzar actualización de UI para mostrar estado de carga
+        
+        try
+        {
+            var client = HttpClientFactory.CreateClient("API");
+            apiBaseAddress = client.BaseAddress?.ToString();
+            
+            Logger.LogInformation("Realizando solicitud a {Url}", $"{apiBaseAddress}api/Warehouse");
+            
+           
+            var response = await client.GetAsync("api/Warehouse");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                
+                var jsonString = await response.Content.ReadAsStringAsync();
+                Logger.LogInformation("Respuesta recibida: {Json}", jsonString);
+                
+                try {
+                    
+                    var options = new JsonSerializerOptions {
+                        PropertyNameCaseInsensitive = true
+                    };
+                    
+                    warehouses = JsonSerializer.Deserialize<List<WarehouseResponseDto>>(jsonString, options);
+                    Logger.LogInformation("Se deserializaron {Count} almacenes", warehouses?.Count ?? 0);
+                    
+                    if (warehouses == null)
+                    {
+                        errorMessage = "Error al deserializar la respuesta";
+                    }
+                }
+                catch (JsonException ex)
+                {
+                    errorMessage = $"Error de formato JSON: {ex.Message}";
+                    Logger.LogError(ex, "Error al deserializar JSON");
+                }
+            }
+            else
+            {
+                errorMessage = $"Error de API: {response.StatusCode}";
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Logger.LogError("Error de API: {Status}. Contenido: {Content}", 
+                    response.StatusCode, errorContent);
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            errorMessage = $"Error de conexión: {ex.Message}";
+            Logger.LogError(ex, "Error de conexión HTTP");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error inesperado: {ex.Message}";
+            Logger.LogError(ex, "Error inesperado");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged(); 
+        }
+    }
+}

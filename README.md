@@ -1,17 +1,5 @@
 ## Instrucciones
 
-<<<<<<< HEAD
-1. hacer fork del repositorio
-1. clonar repositorio: `git clone https://github.com/*tucuentadegithub*/softserve.projectlab.git `
-2. hacer checkout de su rama remota por ej `git checkout -b juanito origin/juanito`
-3. crear una rama para hacer sus cambios de la semana por ej `git switch -c juanito-week1`
-4. hacer los cambios que necesarios para la semana
-5. una vez que tengan los cambios pueden pushear
-6. `git add .`
-7. `git commit -a -m "commit"`
-8. `git push`
-9. `git push -u origin juanito-week1`
-=======
 1. clonar repositorio: `git clone https://github.com/Nicolasdawson/softserve.projectlab.git `
 2. hacer checkout de la rama asignada para la semana, por ej `git checkout -b semana-1 origin/semana-1`
 3. crear una rama con la semana y el nombre, por ej `git switch -c semana-1/juanito`
@@ -57,4 +45,5 @@ antes de hacer merge siempre asegurense de estar en su rama. si quieren usar sou
 ## Contexto
 
 La idea de este projecto es crear un sistema de ventas, vamos a tener un `Package` donde vamos a almacenar la venta (piensen en los datos que se muestran en un checkout), lo principal es poder crear el cliente, poder agregar items a la venta y poder cambiar de estado el package una vez completado. Como es un proyecto para el portafolio mientras mas cosas le pueden agregar mejor, por ej customer tiene LineOfCredit, podemos crear un servicio donde mandamos el RUT o CURP y nos responde si el usuario tiene una linea de credito disponible, podemos hacer que el catalogo sea configurable, etc.
->>>>>>> week-2
+
+
