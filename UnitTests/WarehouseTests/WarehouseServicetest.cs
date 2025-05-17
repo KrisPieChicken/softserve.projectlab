@@ -3,9 +3,8 @@ using API.Services.Logistics;
 using Moq;
 using API.Data.Repositories.LogisticsRepositories.Interfaces;
 using API.Data.Entities;
-using NUnit.Framework;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+
+namespace UnitTests.WarehouseTests;
 
 [TestFixture]
 public class WarehouseServiceTests
@@ -25,6 +24,7 @@ public class WarehouseServiceTests
     [Test]
     public async Task GetAllWarehousesAsync_ReturnsMappedDtos_WhenDomainSuccess()
     {
+        // Arrange
         var warehouseEntity = new WarehouseEntity
         {
             WarehouseId = 1,
@@ -35,8 +35,10 @@ public class WarehouseServiceTests
         };
         _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<WarehouseEntity> { warehouseEntity });
 
+        // Act
         var result = await _service.GetAllWarehousesAsync();
 
+        // Assert
         TestContext.WriteLine($"Result count: {result.Count}");
         Assert.That(result.Count, Is.EqualTo(1), "Should return one warehouse DTO");
         TestContext.WriteLine("Asserted that one warehouse DTO is returned.");
@@ -51,10 +53,13 @@ public class WarehouseServiceTests
     [Test]
     public async Task GetAllWarehousesAsync_ReturnsEmptyList_WhenDomainFails()
     {
+        // Arrange
         _repoMock.Setup(r => r.GetAllAsync()).ThrowsAsync(new System.Exception("error"));
 
+        // Act
         var result = await _service.GetAllWarehousesAsync();
 
+        // Assert
         TestContext.WriteLine($"Result is null: {result == null}");
         Assert.That(result, Is.Not.Null, "Should not be null even if domain fails");
         TestContext.WriteLine("Asserted that result is not null.");
@@ -66,6 +71,7 @@ public class WarehouseServiceTests
     [Test]
     public async Task GetWarehouseByIdAsync_ReturnsMappedDto_WhenDomainSuccess()
     {
+        // Arrange
         var warehouseEntity = new WarehouseEntity
         {
             WarehouseId = 1,
@@ -76,8 +82,10 @@ public class WarehouseServiceTests
         };
         _repoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(warehouseEntity);
 
+        // Act
         var result = await _service.GetWarehouseByIdAsync(1);
 
+        // Assert
         TestContext.WriteLine($"Result: IsSuccess={result.IsSuccess}, WarehouseId={result.Data?.WarehouseId}, Name={result.Data?.Name}");
         Assert.That(result.IsSuccess, Is.True, "Should succeed when warehouse is found");
         TestContext.WriteLine("Asserted that warehouse is found.");
@@ -92,10 +100,13 @@ public class WarehouseServiceTests
     [Test]
     public async Task GetWarehouseByIdAsync_ReturnsFailure_WhenDomainFails()
     {
+        // Arrange
         _repoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync((WarehouseEntity)null);
 
+        // Act
         var result = await _service.GetWarehouseByIdAsync(1);
 
+        // Assert
         TestContext.WriteLine($"Result: IsSuccess={result.IsSuccess}, ErrorMessage={result.ErrorMessage}");
         Assert.That(result.IsSuccess, Is.False, "Should fail when warehouse is not found");
         TestContext.WriteLine("Asserted that warehouse is not found.");
@@ -107,6 +118,7 @@ public class WarehouseServiceTests
     [Test]
     public async Task AddItemToWarehouseAsync_AddsItemAndUpdatesWarehouse()
     {
+        // Arrange
         var warehouseEntity = new WarehouseEntity
         {
             WarehouseId = 1,
@@ -118,8 +130,10 @@ public class WarehouseServiceTests
         _repoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(warehouseEntity);
         _repoMock.Setup(r => r.UpdateAsync(It.IsAny<WarehouseEntity>())).Returns(Task.CompletedTask);
 
+        // Act
         var result = await _service.AddItemToWarehouseAsync(1, 100, 5);
 
+        // Assert
         TestContext.WriteLine($"Result: IsSuccess={result.IsSuccess}, Data={result.Data}");
         Assert.That(result.IsSuccess, Is.True, "Should succeed when item is added");
         TestContext.WriteLine("Asserted that item addition succeeded.");
@@ -131,10 +145,13 @@ public class WarehouseServiceTests
     [Test]
     public async Task AddItemToWarehouseAsync_ReturnsFailure_WhenWarehouseNotFound()
     {
+        // Arrange
         _repoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync((WarehouseEntity)null);
 
+        // Act
         var result = await _service.AddItemToWarehouseAsync(1, 100, 5);
 
+        // Assert
         TestContext.WriteLine($"Result: IsSuccess={result.IsSuccess}, ErrorMessage={result.ErrorMessage}");
         Assert.That(result.IsSuccess, Is.False, "Should fail when warehouse is not found");
         TestContext.WriteLine("Asserted that item addition failed as expected.");
@@ -146,6 +163,7 @@ public class WarehouseServiceTests
     [Test]
     public async Task RemoveItemFromWarehouseAsync_RemovesItemAndUpdatesWarehouse()
     {
+        // Arrange
         var warehouseEntity = new WarehouseEntity
         {
             WarehouseId = 1,
@@ -160,8 +178,10 @@ public class WarehouseServiceTests
         _repoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(warehouseEntity);
         _repoMock.Setup(r => r.UpdateAsync(It.IsAny<WarehouseEntity>())).Returns(Task.CompletedTask);
 
+        // Act
         var result = await _service.RemoveItemFromWarehouseAsync(1, 100);
 
+        // Assert
         TestContext.WriteLine($"Result: IsSuccess={result.IsSuccess}, Data={result.Data}");
         Assert.That(result.IsSuccess, Is.True, "Should succeed when item is removed");
         TestContext.WriteLine("Asserted that item removal succeeded.");
@@ -173,6 +193,7 @@ public class WarehouseServiceTests
     [Test]
     public async Task TransferItemAsync_TransfersItemBetweenWarehouses()
     {
+        // Arrange
         var sourceEntity = new WarehouseEntity
         {
             WarehouseId = 1,
@@ -196,8 +217,10 @@ public class WarehouseServiceTests
         _repoMock.Setup(r => r.GetByIdAsync(2)).ReturnsAsync(targetEntity);
         _repoMock.Setup(r => r.UpdateAsync(It.IsAny<WarehouseEntity>())).Returns(Task.CompletedTask);
 
+        // Act
         var result = await _service.TransferItemAsync(1, 100, 2, 2);
 
+        // Assert
         TestContext.WriteLine($"Result: IsSuccess={result.IsSuccess}, Data={result.Data}");
         Assert.That(result.IsSuccess, Is.True, "Should succeed when transfer is successful");
         TestContext.WriteLine("Asserted that item transfer succeeded.");

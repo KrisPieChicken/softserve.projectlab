@@ -58,7 +58,7 @@ namespace API.Controllers.Logistics
         /// <param name="id">The ID of the warehouse.</param>
         /// <param name="addItemDto">The item details to add.</param>
         /// <returns>A success response or a BadRequest response if validation fails.</returns>
-        [HttpPost("{id}/add-item")]
+        [HttpPost("{id}/items")]
         public async Task<IActionResult> AddItemToWarehouse(int id, [FromBody] AddItemToWarehouseDto addItemDto)
         {
             if (addItemDto.WarehouseId != id)
@@ -74,7 +74,7 @@ namespace API.Controllers.Logistics
         /// <param name="id">The ID of the warehouse.</param>
         /// <param name="sku">The SKU of the item to remove.</param>
         /// <returns>A success response or a NotFound response if the item is not found.</returns>
-        [HttpDelete("{id}/remove-item/{sku}")]
+        [HttpDelete("{id}/items/{sku}")]
         public async Task<IActionResult> RemoveItemFromWarehouse(int id, int sku)
         {
             var result = await _warehouseService.RemoveItemFromWarehouseAsync(id, sku);
@@ -88,7 +88,7 @@ namespace API.Controllers.Logistics
         /// <param name="targetId">The ID of the target warehouse.</param>
         /// <param name="transferItemDto">The transfer details.</param>
         /// <returns>A success response or a BadRequest response if validation fails.</returns>
-        [HttpPost("{sourceId}/transfer-item/{targetId}")]
+        [HttpPost("{sourceId}/items/{targetId}")]
         public async Task<IActionResult> TransferItem(int sourceId, int targetId, [FromBody] TransferItemDto transferItemDto)
         {
             if (transferItemDto.SourceWarehouseId != sourceId || transferItemDto.TargetWarehouseId != targetId)
@@ -104,7 +104,7 @@ namespace API.Controllers.Logistics
         /// <param name="id">The ID of the warehouse.</param>
         /// <param name="threshold">The stock threshold.</param>
         /// <returns>A list of low stock items or a NotFound response if none exist.</returns>
-        [HttpGet("{id}/low-stock")]
+        [HttpGet("{id}/stock")]
         public async Task<IActionResult> GetLowStockItems(int id, [FromQuery] int threshold)
         {
             var result = await _warehouseService.GetLowStockItemsAsync(id, threshold);
@@ -116,7 +116,7 @@ namespace API.Controllers.Logistics
         /// </summary>
         /// <param name="id">The ID of the warehouse.</param>
         /// <returns>The total inventory value or a NotFound response if the warehouse is not found.</returns>
-        [HttpGet("{id}/inventory-value")]
+        [HttpGet("{id}/inventory")]
         public async Task<IActionResult> GetTotalInventoryValue(int id)
         {
             var result = await _warehouseService.CalculateTotalInventoryValueAsync(id);

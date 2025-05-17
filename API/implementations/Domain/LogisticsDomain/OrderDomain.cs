@@ -77,7 +77,6 @@ namespace API.Implementations.Domain
                 orderEntity.OrderTotalAmount = cart.CartItemEntities.Sum(ci => ci.SkuNavigation.ItemPrice * ci.ItemQuantity);
                 orderEntity.UpdatedAt = DateTime.UtcNow;
 
-                // Update order items
                 foreach (var cartItem in cart.CartItemEntities)
                 {
                     var existingOrderItem = orderEntity.OrderItemEntities
@@ -209,18 +208,6 @@ namespace API.Implementations.Domain
                         var orderEntity = OrderMapper.ToEntity(order);
                         await _context.OrderEntities.AddAsync(orderEntity);
                         await _context.SaveChangesAsync();
-
-                        foreach (var cartItem in cart.CartItemEntities)
-                        {
-                            var orderItemEntity = new OrderItemEntity
-                            {
-                                OrderId = orderEntity.OrderId,
-                                Sku = cartItem.SkuNavigation.ItemId,
-                                ItemQuantity = cartItem.ItemQuantity
-                            };
-                            await _context.OrderItemEntities.AddAsync(orderItemEntity);
-                        }
-                        await _context.SaveChangesAsync();
                     }
                 }
 
@@ -232,7 +219,7 @@ namespace API.Implementations.Domain
             }
         }
 
-        public async Task<Result<bool>> FulfillOrder(int orderId /*, string fulfilledBy = null */) //We can see for future Implementation.
+        public async Task<Result<bool>> FulfillOrder(int orderId )
         {
             try
             {
@@ -245,8 +232,6 @@ namespace API.Implementations.Domain
 
                 orderEntity.OrderStatus = "Fulfilled";
                 orderEntity.UpdatedAt = DateTime.UtcNow;
-                // Optionally: orderEntity.FulfilledBy = fulfilledBy; We can see for future Implementation.
-                // Optionally: orderEntity.FulfilledAt = DateTime.UtcNow; We can see for future Implementation.
 
                 await _orderRepository.UpdateAsync(orderEntity);
 
