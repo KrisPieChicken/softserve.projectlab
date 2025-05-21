@@ -82,7 +82,7 @@ namespace API.Controllers.IntAdmin
         /// <summary>
         /// Adds a permission to a role.
         /// </summary>
-        [HttpPost("{roleId}/add-permissions")]
+        [HttpPost("{roleId}/permissions")]
         public async Task<IActionResult> AddPermissionsToRole(int roleId, [FromBody] List<int> permissionIds)
         {
             var result = await _roleService.AddPermissionsToRoleAsync(roleId, permissionIds);
@@ -93,7 +93,7 @@ namespace API.Controllers.IntAdmin
         /// <summary>
         /// Removes a permission from a role by its permission ID.
         /// </summary>
-        [HttpDelete("{roleId}/remove-permission/{permissionId}")]
+        [HttpDelete("{roleId}/permissions/{permissionId}")]
         public async Task<IActionResult> RemovePermissionFromRole(int roleId, int permissionId)
         {
             var result = await _roleService.RemovePermissionFromRoleAsync(roleId, permissionId);

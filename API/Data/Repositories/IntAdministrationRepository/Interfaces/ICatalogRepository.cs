@@ -1,20 +1,13 @@
 ﻿using API.Data.Entities;
+using API.Data.Repositories.BaseRepository;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace API.Data.Repositories.IntAdministrationRepository.Interfaces;
-
-public interface ICatalogRepository
+public interface ICatalogRepository : ISoftRepository<CatalogEntity>
 {
-    Task<CatalogEntity> GetByIdAsync(int catalogId);
-    Task<List<CatalogEntity>> GetAllAsync();
-    Task<CatalogEntity> AddAsync(CatalogEntity entity);
-    Task<CatalogEntity> UpdateAsync(CatalogEntity entity);
-    Task DeleteAsync(int catalogId);
-    Task<bool> ExistsAsync(int catalogId);
+    Task<List<CatalogCategoryEntity>> GetCatalogCategoriesAsync(
+        int catalogId, int skip = 0, int take = 50);
 
-    // Métodos para la tabla pivote
-    Task<List<CatalogCategoryEntity>> GetCatalogCategoriesAsync(int catalogId);
     Task AddCatalogCategoryAsync(CatalogCategoryEntity pivot);
     Task RemoveCatalogCategoryAsync(CatalogCategoryEntity pivot);
 }

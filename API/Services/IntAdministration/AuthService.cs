@@ -3,6 +3,8 @@ using softserve.projectlabs.Shared.DTOs.User;
 using softserve.projectlabs.Shared.Utilities;
 using API.Implementations.Domain;
 using API.Models.IntAdmin;
+using API.Services.IntAdministration;
+using softserve.projectlabs.Shared.DTOs.Auth;
 
 namespace API.Services.IntAdmin;
 
@@ -10,33 +12,44 @@ public class AuthService : IAuthService
 {
     private readonly UserDomain _userDomain;
     private readonly TokenGenerator _tokenGenerator;
+    private readonly ICookieService _cookieSvc;
     private readonly IMapper _mapper;
 
-    public AuthService(UserDomain userDomain, TokenGenerator tokenGenerator, IMapper mapper)
+
+    public AuthService(UserDomain userDomain,
+                       TokenGenerator tokenGenerator,
+                       ICookieService cookieSvc,
+                       IMapper mapper)
     {
         _userDomain = userDomain;
         _tokenGenerator = tokenGenerator;
+        _cookieSvc = cookieSvc;
         _mapper = mapper;
     }
 
-    public async Task<Result<User>> RegisterAsync(UserCreateDto dto)
+    public async Task<Result<AuthResponseDto>> LoginAsync(UserLoginDto dto)
     {
-        var domainModel = _mapper.Map<User>(dto);
-        return await _userDomain.CreateUserAsync(domainModel, plainPassword: dto.UserPassword);
+        var userRes = await _userDomain.AuthenticateAsync(dto.UserEmail, dto.UserPassword);
+        if (!userRes.IsSuccess)
+            return Result<AuthResponseDto>.Failure(userRes.ErrorMessage);
+
+        var token = _tokenGenerator.GenerateJwt(userRes.Data);
+        var life = TimeSpan.FromHours(18);
+
+        _cookieSvc.SetAccessToken(token, life);
+
+        var response = new AuthResponseDto
+        {
+            AccessToken = token,
+            ExpiresIn = (int)life.TotalSeconds
+        };
+
+        return Result<AuthResponseDto>.Success(response);
     }
 
-    public async Task<Result<string>> LoginAsync(UserLoginDto dto)
+    public Task<Result<bool>> LogoutAsync()
     {
-        var userResult = await _userDomain.AuthenticateAsync(dto.UserEmail, dto.UserPassword);
-        if (!userResult.IsSuccess)
-            return Result<string>.Failure(userResult.ErrorMessage);
-
-        var token = _tokenGenerator.GenerateJwt(userResult.Data);
-        return Result<string>.Success(token);
-    }
-
-    public async Task<Result<string>> RefreshTokenAsync(string refreshToken)
-    {
-        return Result<string>.Failure("Not implemented yet.");
+        _cookieSvc.DeleteAccessToken();
+        return Task.FromResult(Result<bool>.Success(true));
     }
 }
