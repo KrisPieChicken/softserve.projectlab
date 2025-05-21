@@ -166,17 +166,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICookieService, CookieService>();
 
 
-// 4. Model implementations
-//builder.Services.AddScoped<IWarehouse, Warehouse>();
-//builder.Services.AddScoped<IBranch, Branch>();
-//builder.Services.AddScoped<IOrder, Order>();
-//builder.Services.AddScoped<ISupplier, Supplier>();
-
-// 5a. Generic repositories (Base layer)
-builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-builder.Services.AddScoped(typeof(ISoftRepository<>), typeof(SoftRepository<>));
-
-// 5. Repositories (Data layer)
+// 5. Repositorios (Data layer)
 builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
 builder.Services.AddScoped<ICatalogRepository, CatalogRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();

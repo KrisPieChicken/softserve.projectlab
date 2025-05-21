@@ -1,0 +1,57 @@
+﻿@using softserve.projectlabs.Shared.DTOs.Item
+@using softserve.projectlabs.Shared.DTOs
+@using MudBlazor
+
+<MudDialog MaxWidth="MaxWidth.Large" FullWidth="true">
+    <DialogContent>
+        @* <MudText Typo="Typo.h6">Inventory Report</MudText> *@
+        <MudTable Items="Items" Dense="true" Hover="true" Bordered="true">
+            <HeaderContent>
+                <MudTh>SKU</MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>Description</MudTh>
+                <MudTh>Stock</MudTh>
+                <MudTh>Unit Cost</MudTh>
+                <MudTh>Price</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Sku</MudTd>
+                <MudTd>@context.ItemName</MudTd>
+                <MudTd>@context.ItemDescription</MudTd>
+                <MudTd>@context.CurrentStock</MudTd>
+                <MudTd>@context.ItemUnitCost.ToString("C")</MudTd>
+                <MudTd>@context.ItemPrice.ToString("C")</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="MudDialog.Cancel">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public string Report { get; set; } = string.Empty;
+    [Parameter] public WarehouseResponseDto Warehouse { get; set; }
+    [CascadingParameter] public IMudDialogInstance MudDialog { get; set; }
+    private List<ItemDto> Items { get; set; } = new();
+
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrWhiteSpace(Report))
+        {
+            try
+            {
+                var raw = System.Text.Json.JsonSerializer.Deserialize<string>(Report);
+                Items = System.Text.Json.JsonSerializer.Deserialize<List<ItemDto>>(raw) ?? new();
+
+                Console.WriteLine($"Deserialized {Items.Count} items.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Deserialization error: {ex.Message}");
+                Items = new();
+            }
+        }
+    }
+
+}

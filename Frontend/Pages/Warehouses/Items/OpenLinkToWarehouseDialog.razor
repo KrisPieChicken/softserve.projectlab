@@ -1,0 +1,69 @@
+﻿@using softserve.projectlabs.Shared.DTOs
+@using softserve.projectlabs.Shared.DTOs.Item
+@inject IHttpClientFactory ClientFactory
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6">Link Item to Warehouse</MudText>
+        <MudText>
+            <b>Item:</b> @Item.ItemName (@Item.Sku)
+        </MudText>
+        <MudSelect @bind-Value="SelectedWarehouseId" Label="Select Warehouse" Required="true" Class="mt-2 mb-2">
+            @foreach (var warehouse in Warehouses)
+            {
+                <MudSelectItem Value="@warehouse.WarehouseId">@warehouse.Name (@warehouse.Location)</MudSelectItem>
+            }
+        </MudSelect>
+        <MudTextField @bind-Value="Quantity" Label="Quantity" Type="number" Required="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="LinkItem" Color="Color.Primary" Disabled="!CanLink">Link</MudButton>
+        <MudButton OnClick="MudDialog.Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public ItemDto Item { get; set; }
+    [Parameter] public List<WarehouseResponseDto> Warehouses { get; set; } = new();
+    [CascadingParameter] public IMudDialogInstance MudDialog { get; set; }
+
+    private int SelectedWarehouseId { get; set; }
+    private int Quantity { get; set; } = 1;
+    private bool IsLoading { get; set; }
+
+    private bool CanLink => SelectedWarehouseId > 0 && Quantity > 0;
+
+    private async Task LinkItem()
+    {
+        if (!CanLink)
+            return;
+
+        IsLoading = true;
+        try
+        {
+            var http = ClientFactory.CreateClient("API");
+            var dto = new
+            {
+                WarehouseId = SelectedWarehouseId,
+                Sku = Item.Sku,
+                CurrentStock = Quantity
+            };
+            var response = await http.PostAsJsonAsync($"api/warehouses/{SelectedWarehouseId}/items", dto);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Item linked to warehouse.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Failed to link item: {error}", Severity.Error);
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+}
