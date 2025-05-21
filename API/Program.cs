@@ -22,6 +22,8 @@ using softserve.projectlabs.Shared.DTOs;
 using API.Data.Repositories.LogisticsRepositories;
 using API.Data.Repositories.LogisticsRepositories.Interfaces;
 using API.Mappings;
+using API.Data.Repositories.BaseRepository;
+using API.Services.IntAdministration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,6 +65,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuer = false,
             ValidateAudience = false
         };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var tokenInCookie = context.Request.Cookies["jwt"];
+                if (!string.IsNullOrWhiteSpace(tokenInCookie))
+                {
+                    context.Token = tokenInCookie;
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddRazorPages();
@@ -90,7 +105,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(frontendOrigin)
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -131,6 +147,7 @@ builder.Services.AddScoped<PackageDomain>();
 builder.Services.AddScoped<TokenGenerator>();
 
 // 3. Interface services
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICustomerService, API.Services.CustomerService>();
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 builder.Services.AddScoped<IBranchService, BranchService>();
@@ -146,6 +163,8 @@ builder.Services.AddScoped<ILineOfCreditService, LineOfCreditService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IPackageService, PackageService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICookieService, CookieService>();
+
 
 // 4. Model implementations
 //builder.Services.AddScoped<IWarehouse, Warehouse>();
@@ -153,7 +172,11 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 //builder.Services.AddScoped<IOrder, Order>();
 //builder.Services.AddScoped<ISupplier, Supplier>();
 
-// 5. Repositorios (Data layer)
+// 5a. Generic repositories (Base layer)
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped(typeof(ISoftRepository<>), typeof(SoftRepository<>));
+
+// 5. Repositories (Data layer)
 builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
 builder.Services.AddScoped<ICatalogRepository, CatalogRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();

@@ -19,6 +19,12 @@ public class UserService : IUserService
         _mapper = mapper;
     }
 
+    public async Task<Result<User>> CreateUserAsync(UserCreateDto dto)
+    {
+        var domainModel = _mapper.Map<User>(dto);
+        return await _userDomain.CreateUserAsync(domainModel, plainPassword: dto.UserPassword);
+    }
+
     public async Task<Result<User>> GetUserByIdAsync(int userId)
     {
         return await _userDomain.GetUserByIdAsync(userId);
