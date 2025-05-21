@@ -1,16 +1,71 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
-        <NavMenu/>
-    </div>
+@using MudBlazor
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+<MudThemeProvider @bind-IsDarkMode="isDarkMode" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
 
-        <article class="content px-4">
+<MudLayout>
+    <MudDrawer @bind-Open="drawerOpen" Elevation="1" Variant="DrawerVariant.Temporary" Class="nav-scrollable d-flex flex-column" Anchor="Anchor.Left" Color="Color.Default">
+               <!-- Navigation -->
+        <MudNavMenu Margin="Margin.Normal" Color="Color.Success">
+            <MudText Typo="Typo.h6" Class="px-4">RanAway</MudText>
+            <MudText Typo="Typo.body2" Class="px-4 mud-text-secondary">SoftServe Project Labs</MudText>
+            <MudDivider DividerType="DividerType.Inset" />
+            <MudNavGroup Title="Internal Admin" Icon="@Icons.Material.Filled.AddBox" Expandable="true" >
+                <MudNavLink Href="intadmin/catalog" Icon="@Icons.Material.Filled.Settings">Catalog</MudNavLink>
+                <MudNavLink Href="home/placeholder1" Icon="@Icons.Material.Filled.FiberManualRecord">Placeholder 1</MudNavLink>
+                <MudNavLink Href="home/placeholder2" Icon="@Icons.Material.Filled.FiberManualRecord">Placeholder 2</MudNavLink>
+                <MudNavLink Href="home/placeholder2" Icon="@Icons.Material.Filled.FiberManualRecord">Placeholder 2</MudNavLink>
+            </MudNavGroup>
+            <MudDivider DividerType="DividerType.Inset" />
+            <MudNavGroup Title="Customers" Icon="@Icons.Material.Filled.List" Expandable="true" >
+                <MudNavLink Href="customers/placeholder1" Icon="@Icons.Material.Filled.FiberManualRecord">Placeholder 1</MudNavLink>
+                <MudNavLink Href="customers/placeholder2" Icon="@Icons.Material.Filled.FiberManualRecord">Placeholder 2</MudNavLink>
+            </MudNavGroup>
+            <MudDivider DividerType="DividerType.Inset" />
+            <MudNavGroup Title ="Warehouse" Icon="@Icons.Material.Filled.Warehouse" Expandable="true" >
+                <MudNavLink Href="warehouses/items" Icon="@Icons.Material.Filled.Settings">Items</MudNavLink>
+                <MudNavLink Href="warehouses/inventory" Icon="@Icons.Material.Filled.Inventory">Inventory</MudNavLink>
+                <MudNavLink Href="warehouses/shipments" Icon="@Icons.Material.Filled.LocalShipping">Shipments</MudNavLink>
+                <MudNavLink Href="warehouses/branches" Icon="@Icons.Material.Filled.ElectricalServices">Branches</MudNavLink>
+            </MudNavGroup>
+        </MudNavMenu>
+
+        <MudSpacer />
+
+        <!-- Footer/Status Bar -->
+        <MudDivider Class="mt-2" />
+        <MudText Typo="Typo.caption" Align="Align.Center" Class="mb-2 mt-2">© 2025 Your Company</MudText>
+    </MudDrawer>
+
+    <MudMainContent>
+        <MudAppBar Color="Color.Info" Elevation="1" Dense="true" Class="top-row ps-3">
+            <div class="d-flex align-items-center w-100">
+                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Dark" Edge="Edge.End" OnClick="ToggleNavMenu" Title="Navigation menu" />
+                <MudSpacer />
+                <!-- AppBar Actions -->
+                <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" Title="Notifications" />
+                <MudMenu Icon="@Icons.Material.Filled.AccountCircle">
+                    <MudMenuItem>Profile</MudMenuItem>
+                    <MudMenuItem>Logout</MudMenuItem>
+                </MudMenu>
+            </div>
+        </MudAppBar>
+
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
             @Body
-        </article>
-    </main>
-</div>
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool drawerOpen = false;
+    private bool isDarkMode = false;
+
+    private void ToggleNavMenu()
+    {
+        drawerOpen = !drawerOpen;
+    }
+}

@@ -1,13 +1,8 @@
 ﻿using API.Data.Entities;
 using API.Data.Repositories.LogisticsRepositories.Interfaces;
 using softserve.projectlabs.Shared.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using softserve.projectlabs.Shared.DTOs;
 using API.Models.IntAdmin;
-using API.Models.Logistics.Warehouse;
 using API.Models.Logistics.Warehouses;
 
 namespace API.Implementations.Domain
@@ -119,7 +114,22 @@ namespace API.Implementations.Domain
         {
             try
             {
-                var warehouseEntity = MapToEntity(warehouse);
+                var warehouseEntity = await _warehouseRepository.GetByIdAsync(warehouse.WarehouseId);
+                if (warehouseEntity == null)
+                    return Result<bool>.Failure("Warehouse not found.");
+
+                warehouseEntity.WarehouseLocation = warehouse.Location;
+                warehouseEntity.WarehouseCapacity = warehouse.Capacity;
+                warehouseEntity.BranchId = warehouse.BranchId;
+
+                warehouseEntity.WarehouseItemEntities = warehouse.Items
+                    .Select(item => new WarehouseItemEntity
+                    {
+                        WarehouseId = warehouse.WarehouseId,
+                        Sku = item.Sku,
+                        ItemQuantity = item.CurrentStock
+                    }).ToList();
+
                 await _warehouseRepository.UpdateAsync(warehouseEntity);
                 return Result<bool>.Success(true);
             }

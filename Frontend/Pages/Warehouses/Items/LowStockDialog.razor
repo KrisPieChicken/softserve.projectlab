@@ -1,0 +1,28 @@
+﻿@using softserve.projectlabs.Shared.DTOs.Item
+
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6">Low Stock Items</MudText>
+        <MudTable Items="Items" Dense="true">
+            <HeaderContent>
+                <MudTh>SKU</MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>Stock</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Sku</MudTd>
+                <MudTd>@context.ItemName</MudTd>
+                <MudTd>@context.CurrentStock</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="MudDialog.Cancel">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public List<ItemDto> Items { get; set; } = new();
+    [CascadingParameter] public IMudDialogInstance MudDialog { get; set; }
+}

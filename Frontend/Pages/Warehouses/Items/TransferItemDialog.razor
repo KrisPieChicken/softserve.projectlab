@@ -1,0 +1,47 @@
+﻿@using softserve.projectlabs.Shared.DTOs
+@inject ISnackbar Snackbar
+@inject IHttpClientFactory ClientFactory
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6">Transfer Item</MudText>
+        <MudSelect @bind-Value="TargetWarehouseId" Label="Target Warehouse" Required="true">
+            @foreach (var w in Warehouses.Where(w => w.WarehouseId != SourceWarehouseId))
+            {
+                <MudSelectItem Value="@w.WarehouseId">@w.Name</MudSelectItem>
+            }
+        </MudSelect>
+        <MudTextField @bind-Value="Sku" Label="SKU" Required="true" />
+        <MudTextField @bind-Value="Quantity" Label="Quantity" Required="true" Type="number" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Transfer" Color="Color.Primary">Transfer</MudButton>
+        <MudButton OnClick="MudDialog.Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public int SourceWarehouseId { get; set; }
+    [Parameter] public List<WarehouseResponseDto> Warehouses { get; set; } = new();
+    [CascadingParameter] public IMudDialogInstance MudDialog { get; set; }
+
+    private int TargetWarehouseId { get; set; }
+    private int Sku { get; set; }
+    private int Quantity { get; set; }
+
+    private async Task Transfer()
+    {
+        var http = ClientFactory.CreateClient("API");
+        var dto = new { SourceWarehouseId, TargetWarehouseId, Sku, Quantity };
+        var response = await http.PostAsJsonAsync($"api/warehouses/{SourceWarehouseId}/items/{TargetWarehouseId}", dto);
+        if (response.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Item transferred.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        else
+        {
+            Snackbar.Add("Failed to transfer item.", Severity.Error);
+        }
+    }
+}

@@ -11,8 +11,9 @@
         <UserSecretsId>45d0b913-d27d-464b-8739-32b5cc3c5806</UserSecretsId>
     </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Aspire.Hosting.AppHost" Version="9.0.0"/>
+    <ItemGroup>    <PackageReference Include="Syncfusion.Blazor.Grid" Version="29.2.4" />
+    <PackageReference Include="Syncfusion.Blazor.Themes" Version="29.2.4" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.0.0"/>
         <PackageReference Include="Aspire.Hosting.SqlServer" Version="9.0.0" />
     </ItemGroup>
 

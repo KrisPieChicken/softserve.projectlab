@@ -1,146 +1,64 @@
 ﻿@page "/"
-@using softserve.projectlabs.Shared.DTOs
-@using softserve.projectlabs.Shared.Interfaces
-@using System.Text.Json
-@inject IHttpClientFactory HttpClientFactory
-@inject ILogger<Home> Logger
+@using MudBlazor
 
-<PageTitle>Dashboard</PageTitle>
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudGrid Spacing="3">
+        <!-- KPI Cards -->
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudText Typo="Typo.h6">Customers</MudText>
+                <MudText Typo="Typo.h4" Color="Color.Primary">123</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudText Typo="Typo.h6">Inventory</MudText>
+                <MudText Typo="Typo.h4" Color="Color.Secondary">456</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudText Typo="Typo.h6">Shipments</MudText>
+                <MudText Typo="Typo.h4" Color="Color.Info">7</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudText Typo="Typo.h6">Branches</MudText>
+                <MudText Typo="Typo.h4" Color="Color.Success">4</MudText>
+            </MudPaper>
+        </MudItem>
 
-<h1 class="text-center my-4">Dashboard</h1>
+        <!-- Recent Activity / Notifications -->
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudText Typo="Typo.h6">Recent Activity</MudText>
+                <MudList T="string">
+                    <MudListItem T="string">Shipment #123 created</MudListItem>
+                    <MudListItem T="string">Customer "Acme" added</MudListItem>
+                    <MudListItem T="string">Inventory updated</MudListItem>
+                </MudList>
+            </MudPaper>
+        </MudItem>
 
-<div class="container">
-    <div class="row">
-        <!-- Warehouses Section -->
-        <div class="col-md-6">
-            <h2 class="text-center">Warehouses</h2>
-            <div class="card">
-                <div class="card-body">
-                    @if (isLoading)
-                    {
-                        <div class="text-center">
-                            <p>Cargando almacenes...</p>
-                            <div class="spinner-border" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </div>
-                    }
-                    else if (errorMessage != null)
-                    {
-                        <div class="alert alert-danger">
-                            <strong>Error:</strong> @errorMessage
-                            <button class="btn btn-sm btn-primary mt-2" @onclick="LoadWarehouses">Reintentar</button>
-                        </div>
-                    }
-                    else if (warehouses == null || !warehouses.Any())
-                    {
-                        <p>No se encontraron almacenes.</p>
-                        <button class="btn btn-sm btn-primary" @onclick="LoadWarehouses">Recargar</button>
-                    }
-                    else
-                    {
-                        <ul class="list-group">
-                            @foreach (var warehouse in warehouses)
-                            {
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>@warehouse.Name</strong> 
-                                        <div class="text-muted">@warehouse.Location</div>
-                                    </div>
-                                    <span class="badge bg-primary rounded-pill">
-                                        Items: @(warehouse.Items?.Count ?? 0)
-                                    </span>
-                                </li>
-                            }
-                        </ul>
-                    }
+        <!-- Quick Actions -->
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudText Typo="Typo.h6">Quick Actions</MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="me-2">Add Item</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" Class="me-2">Create Shipment</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Info">Add Customer</MudButton>
+            </MudPaper>
+        </MudItem>
 
-                    <div class="alert alert-info mt-3">
-                        API Base: @apiBaseAddress
-                        <p>Componente renderizado a las @DateTime.Now.ToString("HH:mm:ss.fff")</p>
-                    </div>
+        <!-- Data Visualization Placeholder -->
+        <MudItem xs="12">
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudText Typo="Typo.h6">Inventory Trends</MudText>
+                <div style="height:200px; background:#f5f5f5; display:flex; align-items:center; justify-content:center;">
+                    [Chart Placeholder]
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-@code {
-    private List<WarehouseResponseDto> warehouses;
-    private bool isLoading = true;
-    private string errorMessage;
-    private string apiBaseAddress;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadWarehouses();
-    }
-
-    private async Task LoadWarehouses()
-    {
-        isLoading = true;
-        errorMessage = null;
-        warehouses = null;
-        StateHasChanged(); // Forzar actualización de UI para mostrar estado de carga
-        
-        try
-        {
-            var client = HttpClientFactory.CreateClient("API");
-            apiBaseAddress = client.BaseAddress?.ToString();
-            
-            Logger.LogInformation("Realizando solicitud a {Url}", $"{apiBaseAddress}api/Warehouse");
-            
-           
-            var response = await client.GetAsync("api/Warehouse");
-            
-            if (response.IsSuccessStatusCode)
-            {
-                
-                var jsonString = await response.Content.ReadAsStringAsync();
-                Logger.LogInformation("Respuesta recibida: {Json}", jsonString);
-                
-                try {
-                    
-                    var options = new JsonSerializerOptions {
-                        PropertyNameCaseInsensitive = true
-                    };
-                    
-                    warehouses = JsonSerializer.Deserialize<List<WarehouseResponseDto>>(jsonString, options);
-                    Logger.LogInformation("Se deserializaron {Count} almacenes", warehouses?.Count ?? 0);
-                    
-                    if (warehouses == null)
-                    {
-                        errorMessage = "Error al deserializar la respuesta";
-                    }
-                }
-                catch (JsonException ex)
-                {
-                    errorMessage = $"Error de formato JSON: {ex.Message}";
-                    Logger.LogError(ex, "Error al deserializar JSON");
-                }
-            }
-            else
-            {
-                errorMessage = $"Error de API: {response.StatusCode}";
-                var errorContent = await response.Content.ReadAsStringAsync();
-                Logger.LogError("Error de API: {Status}. Contenido: {Content}", 
-                    response.StatusCode, errorContent);
-            }
-        }
-        catch (HttpRequestException ex)
-        {
-            errorMessage = $"Error de conexión: {ex.Message}";
-            Logger.LogError(ex, "Error de conexión HTTP");
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Error inesperado: {ex.Message}";
-            Logger.LogError(ex, "Error inesperado");
-        }
-        finally
-        {
-            isLoading = false;
-            StateHasChanged(); 
-        }
-    }
-}
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>

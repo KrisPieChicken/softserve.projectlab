@@ -1,0 +1,327 @@
+﻿@page "/warehouses/items"
+@using System.Net.Http.Json
+@using softserve.projectlabs.Shared.DTOs.Item
+@using softserve.projectlabs.Shared.DTOs
+@inject IHttpClientFactory ClientFactory
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<h3>Warehouse Admin</h3>
+
+<MudTabs @bind-ActivePanelIndex="_activeTab">
+    <MudTabPanel Text="Warehouses">
+        <MudPaper Class="pa-4">
+            <MudTextField @bind-Value="_searchString"
+                          Placeholder="Search warehouses..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Class="mb-4" />
+
+            <MudTable Items="FilteredWarehouses" Hover="true" Dense="true" Bordered="true" SortLabel="Sort by" RowsPerPage="10">
+                <HeaderContent>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Location</MudTh>
+                    <MudTh>Capacity</MudTh>
+                    <MudTh>Items</MudTh>
+                    <MudTh>Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate Context="warehouse">
+                    <MudTd DataLabel="Name">@warehouse.Name</MudTd>
+                    <MudTd DataLabel="Location">@warehouse.Location</MudTd>
+                    <MudTd DataLabel="Capacity">@warehouse.Capacity</MudTd>
+                    <MudTd>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenItemsDrawer(warehouse))">
+                            View Items
+                            <MudBadge Content="@(warehouse.Items?.Count ?? 0)" Color="Color.Secondary" Class="ml-3" />
+                        </MudButton>
+                    </MudTd>
+                    <MudTd>
+                        <MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Primary" Dense="true">
+                            <MudMenuItem OnClick="@(() => OpenAssignItemDialog(warehouse.WarehouseId))">
+                                <MudIcon Icon="@Icons.Material.Filled.Add" /> Assign Item
+                            </MudMenuItem>
+                            <MudMenuItem OnClick="@(() => ShowLowStockDialog(warehouse.WarehouseId))">
+                                <MudIcon Icon="@Icons.Material.Filled.Warning" /> Low Stock
+                            </MudMenuItem>
+                            <MudMenuItem OnClick="@(async () => await ShowInventoryValueDialog(warehouse))">
+                                <MudIcon Icon="@Icons.Material.Filled.AttachMoney" /> Inventory Value
+                            </MudMenuItem>
+                            <MudMenuItem OnClick="@(async () => await ShowInventoryReportDialog(warehouse))">
+                                <MudIcon Icon="@Icons.Material.Filled.Description" /> Report
+                            </MudMenuItem>
+                            <MudMenuItem OnClick="@(() => OpenTransferDialog(warehouse.WarehouseId))">
+                                <MudIcon Icon="@Icons.Material.Filled.SyncAlt" /> Transfer
+                            </MudMenuItem>
+                        </MudMenu>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+    </MudTabPanel>
+    <MudTabPanel Text="All Items">
+        <MudPaper Class="pa-4">
+            <MudTextField @bind-Value="_itemSearchString"
+                          Placeholder="Search items..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Class="mb-4" />
+            <MudTable Items="FilteredItems" Hover="true" Dense="true" Bordered="true" RowsPerPage="10">
+                <HeaderContent>
+                    <MudTh>SKU</MudTh>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Description</MudTh>
+                    <MudTh>Stock</MudTh>
+                    <MudTh>Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate Context="item">
+                    <MudTd>@item.Sku</MudTd>
+                    <MudTd>@item.ItemName</MudTd>
+                    <MudTd>@item.ItemDescription</MudTd>
+                    <MudTd>@item.CurrentStock</MudTd>
+                    <MudTd>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(async () => await ShowLinkToWarehouseDialog(item))">
+                            Link to Warehouse
+                        </MudButton>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+    </MudTabPanel>
+</MudTabs>
+
+<MudDrawer @bind-Open="_drawerOpen" Anchor="Anchor.Right" Elevation="4" ClipMode="DrawerClipMode.Always" Width="400px">
+    <MudDrawerHeader>
+        <MudText Typo="Typo.h6">Items in @(_selectedWarehouse?.Name ?? "")</MudText>
+    </MudDrawerHeader>
+    <div>
+        @if (_selectedWarehouse?.Items != null)
+        {
+            <MudTable Items="_selectedWarehouse.Items" Dense="true" Hover="true" Bordered="true" RowsPerPage="10">
+                <HeaderContent>
+                    <MudTh>SKU</MudTh>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Description</MudTh>
+                    <MudTh>Stock</MudTh>
+                    <MudTh>Remove</MudTh>
+                </HeaderContent>
+                <RowTemplate Context="item">
+                    <MudTd>@item.Sku</MudTd>
+                    <MudTd>@item.ItemName</MudTd>
+                    <MudTd>@item.ItemDescription</MudTd>
+                    <MudTd>@item.CurrentStock</MudTd>
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => RemoveItemFromWarehouse(_selectedWarehouse.WarehouseId, item.Sku))" />
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    </div>
+</MudDrawer>
+
+@code {
+    private List<WarehouseResponseDto> _warehouses = new();
+    private List<ItemDto> _allItems = new();
+    private HttpClient _http;
+    private string _searchString = "";
+    private string _itemSearchString = "";
+    private int _activeTab = 0;
+
+    private bool _drawerOpenBacking;
+    private bool _drawerOpen
+    {
+        get => _drawerOpenBacking;
+        set
+        {
+            if (_drawerOpenBacking != value)
+            {
+                _drawerOpenBacking = value;
+                if (!value)
+                {
+                    _selectedWarehouse = null;
+                }
+            }
+        }
+    }    
+
+    private WarehouseResponseDto? _selectedWarehouse;
+
+    private IEnumerable<WarehouseResponseDto> FilteredWarehouses =>
+        string.IsNullOrWhiteSpace(_searchString)
+            ? _warehouses
+            : _warehouses.Where(w =>
+                (w.Name?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (w.Location?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false));
+
+    private IEnumerable<ItemDto> FilteredItems =>
+        string.IsNullOrWhiteSpace(_itemSearchString)
+            ? _allItems
+            : _allItems.Where(i =>
+                (i.ItemName?.Contains(_itemSearchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (i.ItemDescription?.Contains(_itemSearchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                i.Sku.ToString().Contains(_itemSearchString));
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _http = ClientFactory.CreateClient("API");
+        await LoadWarehouses();
+        await LoadAllItems();
+    }
+
+    private async Task LoadWarehouses()
+    {
+        try
+        {
+            var result = await _http.GetFromJsonAsync<List<WarehouseResponseDto>>("api/warehouses");
+
+            if (result != null)
+                _warehouses = result;
+        }
+        catch
+        {
+            Snackbar.Add("Failed to load warehouses.", Severity.Error);
+        }
+    }
+
+    private async Task LoadAllItems()
+    {
+        try
+        {
+            var result = await _http.GetFromJsonAsync<List<ItemDto>>("api/items");
+            if (result != null)
+                _allItems = result;
+        }
+        catch
+        {
+            Snackbar.Add("Failed to load items.", Severity.Error);
+        }
+    }
+
+    private void OpenItemsDrawer(WarehouseResponseDto warehouse)
+    {
+        _selectedWarehouse = warehouse;
+        _drawerOpen = true;
+    }
+
+    private void OnDrawerClosed()
+    {
+        _drawerOpen = false;
+        _selectedWarehouse = null;
+    }
+
+    private async Task RemoveItemFromWarehouse(int warehouseId, int sku)
+    {
+        var response = await _http.DeleteAsync($"api/warehouses/{warehouseId}/items/{sku}");
+        if (response.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Item removed.", Severity.Success);
+            await LoadWarehouses();
+            if (_selectedWarehouse != null)
+            {
+                _selectedWarehouse = _warehouses.FirstOrDefault(w => w.WarehouseId == warehouseId);
+            }
+        }
+        else
+        {
+            Snackbar.Add("Failed to remove item.", Severity.Error);
+        }
+    }
+
+    private async Task OpenAssignItemDialog(int warehouseId)
+    {
+        var parameters = new DialogParameters { ["WarehouseId"] = warehouseId };
+        var dialog = DialogService.Show<AssignItemDialog>("Assign Item", parameters);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            await LoadWarehouses();
+        }
+    }
+
+    private async Task ShowLowStockDialog(int warehouseId)
+    {
+        var threshold = 10; // You can make this configurable
+        var response = await _http.GetAsync($"api/warehouses/{warehouseId}/stock?threshold={threshold}");
+        if (response.IsSuccessStatusCode)
+        {
+            var items = await response.Content.ReadFromJsonAsync<List<ItemDto>>();
+            var parameters = new DialogParameters { ["Items"] = items ?? new List<ItemDto>() };
+            DialogService.Show<LowStockDialog>("Low Stock Items", parameters);
+        }
+        else
+        {
+            Snackbar.Add("Failed to load low stock items.", Severity.Error);
+        }
+    }
+
+    private async Task OpenTransferDialog(int sourceWarehouseId)
+    {
+        var parameters = new DialogParameters { ["SourceWarehouseId"] = sourceWarehouseId, ["Warehouses"] = _warehouses };
+        var dialog = DialogService.Show<TransferItemDialog>("Transfer Item", parameters);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            await LoadWarehouses();
+        }
+    }
+
+    private async Task ShowInventoryValueDialog(WarehouseResponseDto warehouse)
+    {
+        var response = await _http.GetAsync($"api/warehouses/{warehouse.WarehouseId}/inventory");
+        if (response.IsSuccessStatusCode)
+        {
+            var value = await response.Content.ReadFromJsonAsync<decimal>();
+            var parameters = new DialogParameters
+                {
+                    ["Warehouse"] = warehouse,
+                    ["Value"] = value
+                };
+            DialogService.Show<InventoryValueDialog>("Inventory Value", parameters);
+        }
+        else
+        {
+            Snackbar.Add("Failed to load inventory value.", Severity.Error);
+        }
+    }
+
+    private async Task ShowInventoryReportDialog(WarehouseResponseDto warehouse)
+    {
+        var response = await _http.GetAsync($"api/warehouses/{warehouse.WarehouseId}/inventory-report");
+        if (response.IsSuccessStatusCode)
+        {
+            var report = await response.Content.ReadAsStringAsync();
+            var parameters = new DialogParameters
+                {
+                    ["Warehouse"] = warehouse,
+                    ["Report"] = report
+                };
+            var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true };
+            DialogService.Show<InventoryReportDialog>("Inventory Report", parameters, options);
+        }
+        else
+        {
+            Snackbar.Add("Failed to load inventory report.", Severity.Error);
+        }
+    }
+
+    private async Task ShowLinkToWarehouseDialog(ItemDto item)
+    {
+        var parameters = new DialogParameters
+            {
+                ["Item"] = item,
+                ["Warehouses"] = _warehouses
+            };
+        var dialog = DialogService.Show<OpenLinkToWarehouseDialog>("Link Item to Warehouse", parameters);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            await LoadWarehouses();
+            // Re-select warehouse if drawer is open
+            if (_drawerOpen && _selectedWarehouse != null)
+            {
+                _selectedWarehouse = _warehouses.FirstOrDefault(w => w.WarehouseId == _selectedWarehouse.WarehouseId);
+            }
+            Snackbar.Add("Item linked to warehouse.", Severity.Success);
+        }
+    }
+}
