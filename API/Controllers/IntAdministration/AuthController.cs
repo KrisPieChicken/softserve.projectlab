@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using softserve.projectlabs.Shared.DTOs.User;
 using API.Services.IntAdmin;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers.IntAdmin;
 
@@ -15,24 +16,24 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
-    [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] UserCreateDto userDto)
-    {
-        var result = await _authService.RegisterAsync(userDto);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
-    }
-
+    /// <summary>
+    /// Obtains a new access token by using the credentials of the user.
+    /// </summary>
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] UserLoginDto loginDto)
+    [AllowAnonymous]
+    public async Task<IActionResult> Login([FromBody] UserLoginDto dto)
     {
-        var result = await _authService.LoginAsync(loginDto);
-        return result.IsSuccess ? Ok(result.Data) : Unauthorized(result.ErrorMessage);
+        var res = await _authService.LoginAsync(dto);
+        return res.IsSuccess
+            ? Ok(res.Data)
+            : Unauthorized(res.ErrorMessage);
     }
 
-    [HttpPost("refresh-token")]
-    public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout()
     {
-        var result = await _authService.RefreshTokenAsync(refreshToken);
-        return result.IsSuccess ? Ok(result.Data) : Unauthorized(result.ErrorMessage);
+        var res = await _authService.LogoutAsync();
+        return res.IsSuccess ? NoContent() : BadRequest(res.ErrorMessage);
     }
 }
