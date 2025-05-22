@@ -1,0 +1,95 @@
+﻿@page "/supplier-api-testing"
+@using MudBlazor
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5" Class="mb-4">Supplier API Testing</MudText>
+    <MudExpansionPanels>
+
+        <!-- 1. Add Supplier -->
+        <MudExpansionPanel Text="Add Supplier">
+            <!-- Add form fields for supplier creation here -->
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddSupplier" Class="mt-2">Send Request</MudButton>
+            @if (addSupplierResponse != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@addSupplierResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 2. Update Supplier -->
+        <MudExpansionPanel Text="Update Supplier">
+            <!-- Add form fields for supplier update here -->
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UpdateSupplier" Class="mt-2">Send Request</MudButton>
+            @if (updateSupplierResponse != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@updateSupplierResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 3. Get Supplier By ID -->
+        <MudExpansionPanel Text="Get Supplier By ID">
+            <!-- Add field for Supplier ID -->
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetSupplierById" Class="mt-2">Send Request</MudButton>
+            @if (supplierById != null)
+            {
+                <!-- Display supplier details here -->
+            }
+            else if (!string.IsNullOrEmpty(getSupplierByIdResponse))
+            {
+                <MudText>@getSupplierByIdResponse</MudText>
+            }
+        </MudExpansionPanel>
+
+        <!-- 4. Get All Suppliers -->
+        <MudExpansionPanel Text="Get All Suppliers">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetAllSuppliers">Send Request</MudButton>
+            @if (allSuppliers != null)
+            {
+                <!-- Display suppliers in a table here -->
+            }
+            else if (!string.IsNullOrEmpty(getAllSuppliersResponse))
+            {
+                <MudText>@getAllSuppliersResponse</MudText>
+            }
+        </MudExpansionPanel>
+
+        <!-- 5. Remove Supplier -->
+        <MudExpansionPanel Text="Remove Supplier">
+            <!-- Add field for Supplier ID -->
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RemoveSupplier" Class="mt-2">Send Request</MudButton>
+            @if (removeSupplierResponse != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@removeSupplierResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+</MudPaper>
+
+@code {
+    // Add Supplier
+    private string? addSupplierResponse;
+    private async Task AddSupplier() { /* TODO: Implement API call */ }
+
+    // Update Supplier
+    private string? updateSupplierResponse;
+    private async Task UpdateSupplier() { /* TODO: Implement API call */ }
+
+    // Get Supplier By ID
+    private string? getSupplierByIdResponse;
+    private object? supplierById;
+    private async Task GetSupplierById() { /* TODO: Implement API call */ }
+
+    // Get All Suppliers
+    private string? getAllSuppliersResponse;
+    private IEnumerable<object>? allSuppliers;
+    private async Task GetAllSuppliers() { /* TODO: Implement API call */ }
+
+    // Remove Supplier
+    private string? removeSupplierResponse;
+    private async Task RemoveSupplier() { /* TODO: Implement API call */ }
+}

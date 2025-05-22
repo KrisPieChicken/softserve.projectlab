@@ -13,6 +13,11 @@
             <MudText Typo="Typo.h6" Class="px-4">RanAway</MudText>
             <MudText Typo="Typo.body2" Class="px-4 mud-text-secondary">SoftServe Project Labs</MudText>
             <MudDivider DividerType="DividerType.Inset" />
+            <MudNavGroup Title="Account" Icon="@Icons.Material.Filled.AccountCircle" Expandable="true">
+                <MudNavLink Href="/login" Icon="@Icons.Material.Filled.Login">Login</MudNavLink>
+                <MudNavLink Href="/register" Icon="@Icons.Material.Filled.PersonAdd">Register</MudNavLink>
+            </MudNavGroup>
+            <MudDivider DividerType="DividerType.Inset" />
             <MudNavGroup Title="Internal Admin" Icon="@Icons.Material.Filled.AddBox" Expandable="true" >
                 <MudNavLink Href="intadmin/catalog" Icon="@Icons.Material.Filled.Settings">Catalog</MudNavLink>
                 <MudNavLink Href="home/placeholder1" Icon="@Icons.Material.Filled.FiberManualRecord">Placeholder 1</MudNavLink>
@@ -25,11 +30,10 @@
                 <MudNavLink Href="customers/placeholder2" Icon="@Icons.Material.Filled.FiberManualRecord">Placeholder 2</MudNavLink>
             </MudNavGroup>
             <MudDivider DividerType="DividerType.Inset" />
-            <MudNavGroup Title ="Warehouse" Icon="@Icons.Material.Filled.Warehouse" Expandable="true" >
-                <MudNavLink Href="warehouses/items" Icon="@Icons.Material.Filled.Settings">Items</MudNavLink>
-                <MudNavLink Href="warehouses/inventory" Icon="@Icons.Material.Filled.Inventory">Inventory</MudNavLink>
-                <MudNavLink Href="warehouses/shipments" Icon="@Icons.Material.Filled.LocalShipping">Shipments</MudNavLink>
-                <MudNavLink Href="warehouses/branches" Icon="@Icons.Material.Filled.ElectricalServices">Branches</MudNavLink>
+            <MudNavGroup Title ="Logistics" Icon="@Icons.Material.Filled.Warehouse" Expandable="true" >               
+                <MudNavLink Href="/warehouse-api-testing" Icon="@Icons.Material.Filled.Warehouse">Warehouse APIs</MudNavLink>
+                <MudNavLink Href="/branch-api-testing" Icon="@Icons.Material.Filled.Warehouse">Branch APIs</MudNavLink>
+                <MudNavLink Href="/warehouses/items" Icon="@Icons.Material.Filled.Warehouse">Branch APIs</MudNavLink>
             </MudNavGroup>
         </MudNavMenu>
 
@@ -48,6 +52,9 @@
                 <!-- AppBar Actions -->
                 <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" Title="Notifications" />
                 <MudMenu Icon="@Icons.Material.Filled.AccountCircle">
+                    <MudMenuItem Href="/login">Login</MudMenuItem>
+                    <MudMenuItem Href="/register">Register</MudMenuItem>
+                    <MudDivider />
                     <MudMenuItem>Profile</MudMenuItem>
                     <MudMenuItem>Logout</MudMenuItem>
                 </MudMenu>

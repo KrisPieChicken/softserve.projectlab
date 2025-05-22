@@ -1,0 +1,72 @@
+﻿@page "/"
+@page "/login"
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@using MudBlazor
+@using softserve.projectlabs.Shared.DTOs.Login
+@using softserve.projectlabs.Shared.DTOs.Auth
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5" Class="mb-4">Login</MudText>
+    <MudForm @ref="loginForm">
+        <MudTextField @bind-Value="loginDto.Email" Label="Email" Required="true" Size="Size.Small" />
+        <MudTextField @bind-Value="loginDto.Password" Label="Password" InputType="InputType.Password" Required="true" Size="Size.Small" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoginUser" Class="mt-2">Login</MudButton>
+        <MudText Class="mt-2">
+            Don't have an account?
+            <MudLink Href="/register" Class="ms-1">Register here</MudLink>
+        </MudText>
+    </MudForm>
+    @if (!string.IsNullOrEmpty(loginResponse))
+    {
+        <MudText>@loginResponse</MudText>
+    }
+</MudPaper>
+
+@code {
+    private MudForm? loginForm;
+    private LoginDto loginDto = new();
+    private string? loginResponse;
+
+    private async Task LoginUser()
+    {
+        loginResponse = null;
+        await loginForm?.Validate();
+        try
+        {
+            var result = await Http.PostAsJsonAsync("api/auth/login", new
+            {
+                UserEmail = loginDto.Email,
+                UserPassword = loginDto.Password
+            });
+
+            if (result.IsSuccessStatusCode)
+            {
+                var authResponse = await result.Content.ReadFromJsonAsync<AuthResponseDto>();
+                if (authResponse is not null && !string.IsNullOrEmpty(authResponse.AccessToken))
+                {
+                    // Store JWT in localStorage
+                    await JS.InvokeVoidAsync("localStorage.setItem", "authToken", authResponse.AccessToken);
+
+                    loginResponse = "Login successful.";
+                    Navigation.NavigateTo("/home");
+                }
+                else
+                {
+                    loginResponse = "Login failed: No token received.";
+                }
+            }
+            else
+            {
+                var content = await result.Content.ReadAsStringAsync();
+                loginResponse = $"Error: {content}";
+            }
+        }
+        catch (Exception ex)
+        {
+            loginResponse = $"Exception: {ex.Message}";
+        }
+    }
+}

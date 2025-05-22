@@ -1,10 +1,7 @@
-﻿using API.Models.Logistics;
-using API.Services.Logistics;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc;
 using softserve.projectlabs.Shared.DTOs;
 using softserve.projectlabs.Shared.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers.Logistics
 {
@@ -54,6 +51,7 @@ namespace API.Controllers.Logistics
         /// Retrieves all branches.
         /// </summary>
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetAllBranches()
         {
             var result = await _branchService.GetAllBranchesAsync();

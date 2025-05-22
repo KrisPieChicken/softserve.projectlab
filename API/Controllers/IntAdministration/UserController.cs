@@ -19,7 +19,6 @@ public class UserController : ControllerBase
     /// Creates a new User.
     /// </summary>
     [HttpPost]
-    [Authorize]
     public async Task<IActionResult> CreateUser([FromBody] UserCreateDto dto)
     {
         var result = await _userService.CreateUserAsync(dto);

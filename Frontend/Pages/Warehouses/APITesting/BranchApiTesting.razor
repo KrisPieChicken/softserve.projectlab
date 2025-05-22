@@ -1,0 +1,264 @@
+﻿@page "/branch-api-testing"
+@using System.Net.Http.Json
+@using MudBlazor
+@using softserve.projectlabs.Shared.DTOs
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5" Class="mb-4">Branch API Testing</MudText>
+    <MudExpansionPanels>
+
+        <!-- 1. Add Branch -->
+        <MudExpansionPanel Text="Add Branch">
+            <MudForm @ref="addBranchForm">
+                <MudTextField @bind-Value="addBranchDto.BranchName" Label="Branch Name" Required="true" />
+                <MudTextField @bind-Value="addBranchDto.BranchCity" Label="City" Required="true" />
+                <MudTextField @bind-Value="addBranchDto.BranchAddress" Label="Address" Required="true" />
+                <MudTextField @bind-Value="addBranchDto.BranchRegion" Label="Region" Required="true" />
+                <MudTextField @bind-Value="addBranchDto.BranchContactNumber" Label="Contact Number" Required="true" />
+                <MudTextField @bind-Value="addBranchDto.BranchContactEmail" Label="Contact Email" Required="true" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddBranch" Class="mt-2">Send Request</MudButton>
+            </MudForm>
+            @if (addBranchResponse != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@addBranchResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 2. Update Branch -->
+        <MudExpansionPanel Text="Update Branch">
+            <MudForm @ref="updateBranchForm">
+                <MudTextField @bind-Value="updateBranchId" Label="Branch ID" Required="true" />
+                <MudTextField @bind-Value="updateBranchDto.BranchName" Label="Branch Name" Required="true" />
+                <MudTextField @bind-Value="updateBranchDto.BranchCity" Label="City" Required="true" />
+                <MudTextField @bind-Value="updateBranchDto.BranchAddress" Label="Address" Required="true" />
+                <MudTextField @bind-Value="updateBranchDto.BranchRegion" Label="Region" Required="true" />
+                <MudTextField @bind-Value="updateBranchDto.BranchContactNumber" Label="Contact Number" Required="true" />
+                <MudTextField @bind-Value="updateBranchDto.BranchContactEmail" Label="Contact Email" Required="true" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UpdateBranch" Class="mt-2">Send Request</MudButton>
+            </MudForm>
+            @if (updateBranchResponse != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@updateBranchResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 3. Get Branch By ID -->
+        <MudExpansionPanel Text="Get Branch By ID">
+            <MudTextField @bind-Value="getBranchId" Label="Branch ID" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetBranchById" Class="mt-2">Send Request</MudButton>
+            @if (branchById != null)
+            {
+                <MudCard>
+                    <MudCardContent>
+                        <MudText><b>ID:</b> @branchById.BranchId</MudText>
+                        <MudText><b>Name:</b> @branchById.BranchName</MudText>
+                        <MudText><b>City:</b> @branchById.BranchCity</MudText>
+                        <MudText><b>Address:</b> @branchById.BranchAddress</MudText>
+                        <MudText><b>Region:</b> @branchById.BranchRegion</MudText>
+                        <MudText><b>Contact Number:</b> @branchById.BranchContactNumber</MudText>
+                        <MudText><b>Contact Email:</b> @branchById.BranchContactEmail</MudText>
+                    </MudCardContent>
+                </MudCard>
+            }
+            else if (!string.IsNullOrEmpty(getBranchByIdResponse))
+            {
+                <MudText>@getBranchByIdResponse</MudText>
+            }
+        </MudExpansionPanel>
+
+        <!-- 4. Get All Branches -->
+        <MudExpansionPanel Text="Get All Branches">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetAllBranches">Send Request</MudButton>
+            @if (allBranches != null)
+            {
+                <MudTable Items="allBranches">
+                    <HeaderContent>
+                        <MudTh>ID</MudTh>
+                        <MudTh>Name</MudTh>
+                        <MudTh>City</MudTh>
+                        <MudTh>Address</MudTh>
+                        <MudTh>Region</MudTh>
+                        <MudTh>Contact Number</MudTh>
+                        <MudTh>Contact Email</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.BranchId</MudTd>
+                        <MudTd>@context.BranchName</MudTd>
+                        <MudTd>@context.BranchCity</MudTd>
+                        <MudTd>@context.BranchAddress</MudTd>
+                        <MudTd>@context.BranchRegion</MudTd>
+                        <MudTd>@context.BranchContactNumber</MudTd>
+                        <MudTd>@context.BranchContactEmail</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+            else if (!string.IsNullOrEmpty(getAllBranchesResponse))
+            {
+                <MudText>@getAllBranchesResponse</MudText>
+            }
+        </MudExpansionPanel>
+
+        <!-- 5. Remove Branch -->
+        <MudExpansionPanel Text="Remove Branch">
+            <MudTextField @bind-Value="removeBranchId" Label="Branch ID" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RemoveBranch" Class="mt-2">Send Request</MudButton>
+            @if (removeBranchResponse != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@removeBranchResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+    </MudExpansionPanels>
+</MudPaper>
+
+@code {
+    // Add Branch
+    private MudForm? addBranchForm;
+    private BranchDto addBranchDto = new();
+    private string? addBranchResponse;
+    private async Task AddBranch()
+    {
+        addBranchResponse = null;
+        await addBranchForm?.Validate();
+        try
+        {
+            var result = await Http.PostAsJsonAsync("api/branches", addBranchDto);
+            if (result.IsSuccessStatusCode)
+            {
+                addBranchResponse = "Branch added successfully.";
+                Snackbar.Add(addBranchResponse, Severity.Success);
+            }
+            else
+            {
+                var content = await result.Content.ReadAsStringAsync();
+                addBranchResponse = $"Error {result.StatusCode}: {content}";
+                Snackbar.Add(addBranchResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            addBranchResponse = $"Exception: {ex.Message}";
+            Snackbar.Add(addBranchResponse, Severity.Error);
+        }
+    }
+
+    // Update Branch
+    private MudForm? updateBranchForm;
+    private int updateBranchId;
+    private BranchDto updateBranchDto = new();
+    private string? updateBranchResponse;
+    private async Task UpdateBranch()
+    {
+        updateBranchResponse = null;
+        await updateBranchForm?.Validate();
+        updateBranchDto.BranchId = updateBranchId;
+        try
+        {
+            var result = await Http.PutAsJsonAsync($"api/branches/{updateBranchId}", updateBranchDto);
+            if (result.IsSuccessStatusCode)
+            {
+                updateBranchResponse = "Branch updated successfully.";
+                Snackbar.Add(updateBranchResponse, Severity.Success);
+            }
+            else
+            {
+                var content = await result.Content.ReadAsStringAsync();
+                updateBranchResponse = $"Error {result.StatusCode}: {content}";
+                Snackbar.Add(updateBranchResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            updateBranchResponse = $"Exception: {ex.Message}";
+            Snackbar.Add(updateBranchResponse, Severity.Error);
+        }
+    }
+
+    // Get Branch By ID
+    private int getBranchId;
+    private BranchDto? branchById;
+    private string? getBranchByIdResponse;
+    private async Task GetBranchById()
+    {
+        branchById = null;
+        getBranchByIdResponse = null;
+        try
+        {
+            branchById = await Http.GetFromJsonAsync<BranchDto>($"api/branches/{getBranchId}");
+            if (branchById == null)
+            {
+                getBranchByIdResponse = "Branch not found.";
+                Snackbar.Add(getBranchByIdResponse, Severity.Info);
+            }
+        }
+        catch (Exception ex)
+        {
+            getBranchByIdResponse = $"Exception: {ex.Message}";
+            Snackbar.Add(getBranchByIdResponse, Severity.Error);
+        }
+    }
+
+    // Get All Branches
+    private List<BranchDto>? allBranches;
+    private string? getAllBranchesResponse;
+    private async Task GetAllBranches()
+    {
+        allBranches = null;
+        getAllBranchesResponse = null;
+        try
+        {
+            allBranches = await Http.GetFromJsonAsync<List<BranchDto>>("api/branches");
+            if (allBranches == null || allBranches.Count == 0)
+            {
+                getAllBranchesResponse = "No branches found.";
+                Snackbar.Add(getAllBranchesResponse, Severity.Info);
+            }
+        }
+        catch (Exception ex)
+        {
+            getAllBranchesResponse = $"Exception: {ex.Message}";
+            Snackbar.Add(getAllBranchesResponse, Severity.Error);
+        }
+    }
+
+    // Remove Branch
+    private int removeBranchId;
+    private string? removeBranchResponse;
+    private async Task RemoveBranch()
+    {
+        removeBranchResponse = null;
+        if (removeBranchId <= 0)
+        {
+            Snackbar.Add("Please enter a valid Branch ID.", Severity.Warning);
+            return;
+        }
+        try
+        {
+            var result = await Http.DeleteAsync($"api/branches/{removeBranchId}");
+            if (result.IsSuccessStatusCode)
+            {
+                removeBranchResponse = "Branch removed successfully.";
+                Snackbar.Add(removeBranchResponse, Severity.Success);
+            }
+            else
+            {
+                var content = await result.Content.ReadAsStringAsync();
+                removeBranchResponse = $"Error {result.StatusCode}: {content}";
+                Snackbar.Add(removeBranchResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            removeBranchResponse = $"Exception: {ex.Message}";
+            Snackbar.Add(removeBranchResponse, Severity.Error);
+        }
+    }
+}

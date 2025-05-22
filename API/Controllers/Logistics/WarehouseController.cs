@@ -1,10 +1,7 @@
-﻿using API.Services.Logistics;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using softserve.projectlabs.Shared.DTOs;
 using softserve.projectlabs.Shared.Interfaces;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace API.Controllers.Logistics
 {
@@ -31,6 +28,7 @@ namespace API.Controllers.Logistics
         /// </summary>
         /// <returns>A list of warehouses or a NotFound response if none exist.</returns>
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetAllWarehouses()
         {
             var warehouses = await _warehouseService.GetAllWarehousesAsync();
@@ -158,6 +156,19 @@ namespace API.Controllers.Logistics
             var result = await _warehouseService.UndeleteWarehouseAsync(id);
             return result.IsSuccess ? Ok() : NotFound(result.ErrorMessage);
         }
+
+        /// <summary>
+        /// Creates a new warehouse.
+        /// </summary>
+        /// <param name="warehouseDto">The warehouse details.</param>
+        /// <returns>The created warehouse or a BadRequest response if creation fails.</returns>
+        [HttpPost]
+        public async Task<IActionResult> CreateWarehouse([FromBody] WarehouseDto warehouseDto)
+        {
+            var result = await _warehouseService.CreateWarehouseAsync(warehouseDto);
+            return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+        }
+
     }
 }
 
