@@ -51,7 +51,6 @@ namespace API.Controllers.Logistics
         /// Retrieves all branches.
         /// </summary>
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> GetAllBranches()
         {
             var result = await _branchService.GetAllBranchesAsync();

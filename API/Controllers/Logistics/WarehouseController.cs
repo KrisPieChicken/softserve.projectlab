@@ -28,7 +28,6 @@ namespace API.Controllers.Logistics
         /// </summary>
         /// <returns>A list of warehouses or a NotFound response if none exist.</returns>
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> GetAllWarehouses()
         {
             var warehouses = await _warehouseService.GetAllWarehousesAsync();

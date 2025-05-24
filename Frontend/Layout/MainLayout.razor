@@ -1,5 +1,8 @@
 ﻿@inherits LayoutComponentBase
 @using MudBlazor
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <MudThemeProvider @bind-IsDarkMode="isDarkMode" />
 <MudPopoverProvider />
@@ -51,12 +54,19 @@
                 <MudSpacer />
                 <!-- AppBar Actions -->
                 <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" Title="Notifications" />
-                <MudMenu Icon="@Icons.Material.Filled.AccountCircle">
-                    <MudMenuItem Href="/login">Login</MudMenuItem>
-                    <MudMenuItem Href="/register">Register</MudMenuItem>
-                    <MudDivider />
-                    <MudMenuItem>Profile</MudMenuItem>
-                    <MudMenuItem>Logout</MudMenuItem>
+                <MudMenu Icon="@Icons.Material.Filled.AccountBox">
+                    <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Label="@userName">
+                        @if (!isAuthenticated)
+                        {
+                            <MudMenuItem Href="/login">Login</MudMenuItem>
+                            <MudMenuItem Href="/register">Register</MudMenuItem>
+                        }
+                        else
+                        {
+                            <MudMenuItem>Profile</MudMenuItem>
+                            <MudMenuItem OnClick="Logout">Logout</MudMenuItem>
+                        }
+                    </MudMenu>
                 </MudMenu>
             </div>
         </MudAppBar>
@@ -70,9 +80,60 @@
 @code {
     private bool drawerOpen = false;
     private bool isDarkMode = false;
+    private bool isAuthenticated;
+    private string userName = "Guest";
 
     private void ToggleNavMenu()
     {
         drawerOpen = !drawerOpen;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateAuthState();
+    }
+
+    private async Task UpdateAuthState()
+    {
+        var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
+        isAuthenticated = !string.IsNullOrEmpty(token);
+        userName = isAuthenticated ? GetUserNameFromToken(token) : "Guest";
+        StateHasChanged();
+    }
+
+    private async Task Logout()
+    {
+        await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
+        isAuthenticated = false;
+        userName = "Guest";
+        Snackbar.Add("Logged out successfully.", Severity.Info);
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+
+    // Simple JWT parsing for demo (use a library for production)
+    private string GetUserNameFromToken(string token)
+    {
+        if (string.IsNullOrEmpty(token)) return "Guest";
+        try
+        {
+            var payload = token.Split('.')[1];
+            var json = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(PadBase64(payload)));
+            var name = System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("name").GetString();
+            return name ?? "User";
+        }
+        catch
+        {
+            return "User";
+        }
+    }
+
+    private string PadBase64(string base64)
+    {
+        switch (base64.Length % 4)
+        {
+            case 2: return base64 + "==";
+            case 3: return base64 + "=";
+            default: return base64;
+        }
     }
 }
