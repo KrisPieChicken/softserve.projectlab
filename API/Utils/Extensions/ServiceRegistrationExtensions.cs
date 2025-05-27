@@ -4,13 +4,16 @@ using API.Services.Interfaces;
 using API.Services.IntAdmin;
 using API.Implementations.Domain;
 using API.Services;
-using softserve.projectlabs.Shared.DTOs;
 using API.Data.Repositories.IntAdministrationRepository.Interfaces;
 using API.Data.Repositories.IntAdministrationRepository;
 using API.Data.Repositories.LogisticsRepositories;
 using API.Data.Repositories.LogisticsRepositories.Interfaces;
 using API.Services.IntAdministration;
 using softserve.projectlabs.Shared.Interfaces;
+using softserve.projectlabs.Shared.DTOs.Branch;
+using softserve.projectlabs.Shared.DTOs.Supplier;
+using softserve.projectlabs.Shared.DTOs.Warehouse;
+using softserve.projectlabs.Shared.DTOs.Order;
 
 namespace API.Utils.Extensions;
 

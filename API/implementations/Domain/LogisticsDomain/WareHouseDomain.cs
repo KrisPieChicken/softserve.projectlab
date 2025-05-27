@@ -1,9 +1,9 @@
 ﻿using API.Data.Entities;
 using API.Data.Repositories.LogisticsRepositories.Interfaces;
 using softserve.projectlabs.Shared.Utilities;
-using softserve.projectlabs.Shared.DTOs;
 using API.Models.IntAdmin;
 using API.Models.Logistics.Warehouses;
+using softserve.projectlabs.Shared.DTOs.Warehouse;
 
 namespace API.Implementations.Domain
 {

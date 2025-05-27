@@ -1,5 +1,5 @@
 ﻿using API.Models.IntAdmin;
-using softserve.projectlabs.Shared.DTOs;
+using softserve.projectlabs.Shared.DTOs.Warehouse;
 
 namespace API.Models.Logistics.Warehouses
 {

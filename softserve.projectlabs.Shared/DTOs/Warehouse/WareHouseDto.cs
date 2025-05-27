@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace softserve.projectlabs.Shared.DTOs
+namespace softserve.projectlabs.Shared.DTOs.Warehouse
 {
     public class WarehouseDto :BaseDto
     {

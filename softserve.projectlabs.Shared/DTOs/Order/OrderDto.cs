@@ -1,4 +1,4 @@
-﻿namespace softserve.projectlabs.Shared.DTOs
+﻿namespace softserve.projectlabs.Shared.DTOs.Order
 {
     public class OrderDto : BaseDto
     {

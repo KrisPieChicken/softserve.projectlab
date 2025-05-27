@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using softserve.projectlabs.Shared.DTOs;
 using softserve.projectlabs.Shared.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using softserve.projectlabs.Shared.DTOs.Branch;
 
 namespace API.Controllers.Logistics
 {

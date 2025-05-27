@@ -1,6 +1,6 @@
 ﻿using softserve.projectlabs.Shared.DTOs.Item;
 
-namespace softserve.projectlabs.Shared.DTOs
+namespace softserve.projectlabs.Shared.DTOs.Warehouse
 {
     public class WarehouseResponseDto
     {

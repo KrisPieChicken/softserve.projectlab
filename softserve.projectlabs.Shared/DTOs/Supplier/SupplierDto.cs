@@ -1,4 +1,4 @@
-﻿namespace softserve.projectlabs.Shared.DTOs
+﻿namespace softserve.projectlabs.Shared.DTOs.Supplier
 {
     public class SupplierDto : BaseDto
     {

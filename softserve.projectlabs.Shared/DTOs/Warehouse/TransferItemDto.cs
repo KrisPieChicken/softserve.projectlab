@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace softserve.projectlabs.Shared.DTOs
+namespace softserve.projectlabs.Shared.DTOs.Warehouse
 {
     public class TransferItemDto
     {
