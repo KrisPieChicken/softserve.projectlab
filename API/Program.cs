@@ -165,6 +165,9 @@ builder.Services.AddScoped<IPackageService, PackageService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICookieService, CookieService>();
 
+// 5a. Generic repositories (Base layer)
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped(typeof(ISoftRepository<>), typeof(SoftRepository<>));
 
 // 5. Repositorios (Data layer)
 builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();

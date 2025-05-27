@@ -34,6 +34,8 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Logout()
     {
         var res = await _authService.LogoutAsync();
-        return res.IsSuccess ? NoContent() : BadRequest(res.ErrorMessage);
+        return res.IsSuccess 
+            ? NoContent() 
+            : BadRequest(res.ErrorMessage);
     }
 }

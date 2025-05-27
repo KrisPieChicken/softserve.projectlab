@@ -15,7 +15,6 @@ public class AuthService : IAuthService
     private readonly ICookieService _cookieSvc;
     private readonly IMapper _mapper;
 
-
     public AuthService(UserDomain userDomain,
                        TokenGenerator tokenGenerator,
                        ICookieService cookieSvc,
