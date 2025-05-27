@@ -1,5 +1,4 @@
-﻿using API.Models.Logistics;
-using API.Data.Entities;
+﻿using API.Data.Entities;
 using softserve.projectlabs.Shared.Utilities;
 using API.Data.Repositories.LogisticsRepositories.Interfaces;
 using API.Models.Logistics.Branch;

@@ -1,5 +1,4 @@
-﻿using API.Models.Logistics.Warehouse.Warehouse;
-
+﻿
 namespace API.Models.Logistics.Order
 {
     public class OrderItemRequest

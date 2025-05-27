@@ -7,6 +7,7 @@ using softserve.projectlabs.Shared.DTOs;
 // Type aliases to avoid namespace/type confusion
 using OrderModel = API.Models.Logistics.Order.Order;
 using OrderItemModel = API.Models.Logistics.Order.OrderItem;
+using softserve.projectlabs.Shared.DTOs.Order;
 
 namespace UnitTests.Order
 {

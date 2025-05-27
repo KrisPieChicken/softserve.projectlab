@@ -19,6 +19,8 @@ namespace API.Controllers.Logistics
         /// <summary>
         /// Adds a new branch.
         /// </summary>
+        /// <param name="branchDto">The branch data to add.</param>
+        /// <returns>The created branch if successful; otherwise, a bad request with an error message.</returns>
         [HttpPost]
         public async Task<IActionResult> AddBranch([FromBody] BranchDto branchDto)
         {
@@ -29,7 +31,11 @@ namespace API.Controllers.Logistics
         /// <summary>
         /// Updates an existing branch.
         /// </summary>
+        /// <param name="branchId">The ID of the branch to update.</param>
+        /// <param name="branchDto">The updated branch data.</param>
+        /// <returns>The updated branch if successful; otherwise, not found with an error message.</returns>
         [HttpPut("{branchId}")]
+        [Authorize]
         public async Task<IActionResult> UpdateBranch(int branchId, [FromBody] BranchDto branchDto)
         {
             branchDto.BranchId = branchId;
@@ -40,6 +46,8 @@ namespace API.Controllers.Logistics
         /// <summary>
         /// Retrieves a branch by its ID.
         /// </summary>
+        /// <param name="branchId">The ID of the branch to retrieve.</param>
+        /// <returns>The branch if found; otherwise, not found with an error message.</returns>
         [HttpGet("{branchId}")]
         public async Task<IActionResult> GetBranchById(int branchId)
         {
@@ -50,6 +58,7 @@ namespace API.Controllers.Logistics
         /// <summary>
         /// Retrieves all branches.
         /// </summary>
+        /// <returns>A list of all branches if successful; otherwise, a bad request with an error message.</returns>
         [HttpGet]
         public async Task<IActionResult> GetAllBranches()
         {
@@ -60,7 +69,10 @@ namespace API.Controllers.Logistics
         /// <summary>
         /// Removes a branch by its ID.
         /// </summary>
+        /// <param name="branchId">The ID of the branch to remove.</param>
+        /// <returns>True if the branch was removed; otherwise, not found with an error message.</returns>
         [HttpDelete("{branchId}")]
+        [Authorize]
         public async Task<IActionResult> RemoveBranch(int branchId)
         {
             var result = await _branchService.RemoveBranchAsync(branchId);

@@ -1,11 +1,9 @@
-﻿using API.Services.Logistics;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using softserve.projectlabs.Shared.Utilities;
+﻿using Microsoft.AspNetCore.Mvc;
 using softserve.projectlabs.Shared.Interfaces;
 using AutoMapper;
 using API.Models.Logistics.Order;
 using softserve.projectlabs.Shared.DTOs.Order;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers.Logistics
 {
@@ -70,6 +68,7 @@ namespace API.Controllers.Logistics
         /// or a 404 Not Found response if the order does not exist.
         /// </returns>
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> UpdateOrder(int id, [FromBody] Order order)
         {
             var orderDto = _mapper.Map<OrderDto>(order);
@@ -88,6 +87,7 @@ namespace API.Controllers.Logistics
         /// - 404 Not Found if the order does not exist.
         /// </returns>
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteOrder(int id)
         {
             var result = await _orderService.DeleteOrderAsync(id);
@@ -104,6 +104,7 @@ namespace API.Controllers.Logistics
         /// <param name="cartId">The ID of the cart associated with the order.</param>
         /// <returns>An <see cref="IActionResult"/> containing the order details or an error message.</returns>
         [HttpGet("cart/{cartId}")]
+        [Authorize]
         public async Task<IActionResult> RetrieveOrderByCartId(int cartId)
         {
             var result = await _orderService.RetrieveOrderByCartIdAsync(cartId);
@@ -120,6 +121,7 @@ namespace API.Controllers.Logistics
         /// - 400 Bad Request if the operation failed.
         /// </returns>
         [HttpPost("{orderId}/fulfill")]
+        [Authorize]
         public async Task<IActionResult> FulfillOrder(int orderId)
         {
             var result = await _orderService.FulfillOrderAsync(orderId);
@@ -131,6 +133,7 @@ namespace API.Controllers.Logistics
         /// </summary>
         /// <returns>An <see cref="IActionResult"/> indicating the result of the operation.</returns>
         [HttpPost("save-unsaved-orders")]
+        [Authorize]
         public async Task<IActionResult> RetrieveAndSaveAllUnsavedOrders()
         {
             var result = await _orderService.RetrieveAndSaveAllUnsavedOrdersAsync();

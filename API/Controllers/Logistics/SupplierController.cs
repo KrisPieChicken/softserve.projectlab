@@ -2,6 +2,7 @@
 using AutoMapper;
 using softserve.projectlabs.Shared.Interfaces;
 using softserve.projectlabs.Shared.DTOs.Supplier;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers.Logistics
 {
@@ -32,6 +33,7 @@ namespace API.Controllers.Logistics
         /// <param name="supplierDto">The supplier data to create.</param>
         /// <returns>HTTP 201 Created if successful, otherwise HTTP 400 Bad Request.</returns>
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> CreateSupplier([FromBody] SupplierDto supplierDto)
         {
             if (!ModelState.IsValid)
@@ -74,6 +76,7 @@ namespace API.Controllers.Logistics
         /// <param name="supplierDto">The updated supplier data.</param>
         /// <returns>HTTP 200 OK with the updated supplier data, or HTTP 404 Not Found if not found.</returns>
         [HttpPut("{supplierId}")]
+        [Authorize]
         public async Task<IActionResult> UpdateSupplier(int supplierId, [FromBody] SupplierDto supplierDto)
         {
             if (!ModelState.IsValid)
@@ -90,6 +93,7 @@ namespace API.Controllers.Logistics
         /// <param name="supplierId">The ID of the supplier to delete.</param>
         /// <returns>HTTP 204 No Content if successful, or HTTP 404 Not Found if not found.</returns>
         [HttpDelete("{supplierId}")]
+        [Authorize]
         public async Task<IActionResult> DeleteSupplier(int supplierId)
         {
             var result = await _supplierService.DeleteSupplierAsync(supplierId);
@@ -102,6 +106,7 @@ namespace API.Controllers.Logistics
         /// <param name="supplierId">The ID of the supplier to restore.</param>
         /// <returns>HTTP 200 OK if successful, or HTTP 404 Not Found if the supplier does not exist.</returns>
         [HttpPut("{supplierId}/undelete")]
+        [Authorize]
         public async Task<IActionResult> UndeleteSupplier(int supplierId)
         {
             var result = await _supplierService.UndeleteSupplierAsync(supplierId);
@@ -118,6 +123,7 @@ namespace API.Controllers.Logistics
         /// or HTTP 400 Bad Request if the input data is invalid or the operation fails.
         /// </returns>
         [HttpPost("{supplierId}/items")]
+        [Authorize]
         public async Task<IActionResult> AddItemToSupplier(int supplierId, [FromBody] AddItemToSupplierDto dto)
         {
             if (!ModelState.IsValid)
