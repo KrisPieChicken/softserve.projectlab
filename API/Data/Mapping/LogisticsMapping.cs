@@ -3,8 +3,11 @@ using API.Models.IntAdmin;
 using API.Models.Logistics.Order;
 using API.Models.Logistics.Warehouse;
 using AutoMapper;
-using softserve.projectlabs.Shared.DTOs;
+using softserve.projectlabs.Shared.DTOs.Branch;
 using softserve.projectlabs.Shared.DTOs.Item;
+using softserve.projectlabs.Shared.DTOs.Order;
+using softserve.projectlabs.Shared.DTOs.Supplier;
+using softserve.projectlabs.Shared.DTOs.Warehouse;
 
 public class LogisticsMapping : Profile
 {

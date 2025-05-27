@@ -1,8 +1,6 @@
 ﻿using API.Services.IntAdmin;
 using Microsoft.AspNetCore.Mvc;
 using softserve.projectlabs.Shared.DTOs.Category;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace API.Controllers.IntAdmin
 {

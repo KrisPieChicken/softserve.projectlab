@@ -1,5 +1,8 @@
 ﻿@inherits LayoutComponentBase
 @using MudBlazor
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <MudThemeProvider @bind-IsDarkMode="isDarkMode" />
 <MudPopoverProvider />
@@ -13,6 +16,11 @@
             <MudText Typo="Typo.h6" Class="px-4">RanAway</MudText>
             <MudText Typo="Typo.body2" Class="px-4 mud-text-secondary">SoftServe Project Labs</MudText>
             <MudDivider DividerType="DividerType.Inset" />
+            <MudNavGroup Title="Account" Icon="@Icons.Material.Filled.AccountCircle" Expandable="true">
+                <MudNavLink Href="/login" Icon="@Icons.Material.Filled.Login">Login</MudNavLink>
+                <MudNavLink Href="/register" Icon="@Icons.Material.Filled.PersonAdd">Register</MudNavLink>
+            </MudNavGroup>
+            <MudDivider DividerType="DividerType.Inset" />
             <MudNavGroup Title="Internal Admin" Icon="@Icons.Material.Filled.AddBox" Expandable="true" >
                 <MudNavLink Href="intadmin/catalog" Icon="@Icons.Material.Filled.Settings">Catalog</MudNavLink>
                 <MudNavLink Href="home/placeholder1" Icon="@Icons.Material.Filled.FiberManualRecord">Placeholder 1</MudNavLink>
@@ -25,11 +33,10 @@
                 <MudNavLink Href="customers/placeholder2" Icon="@Icons.Material.Filled.FiberManualRecord">Placeholder 2</MudNavLink>
             </MudNavGroup>
             <MudDivider DividerType="DividerType.Inset" />
-            <MudNavGroup Title ="Warehouse" Icon="@Icons.Material.Filled.Warehouse" Expandable="true" >
-                <MudNavLink Href="warehouses/items" Icon="@Icons.Material.Filled.Settings">Items</MudNavLink>
-                <MudNavLink Href="warehouses/inventory" Icon="@Icons.Material.Filled.Inventory">Inventory</MudNavLink>
-                <MudNavLink Href="warehouses/shipments" Icon="@Icons.Material.Filled.LocalShipping">Shipments</MudNavLink>
-                <MudNavLink Href="warehouses/branches" Icon="@Icons.Material.Filled.ElectricalServices">Branches</MudNavLink>
+            <MudNavGroup Title ="Logistics" Icon="@Icons.Material.Filled.Warehouse" Expandable="true" >               
+                <MudNavLink Href="/warehouse-api-testing" Icon="@Icons.Material.Filled.Warehouse">Warehouse APIs</MudNavLink>
+                <MudNavLink Href="/branch-api-testing" Icon="@Icons.Material.Filled.Warehouse">Branch APIs</MudNavLink>
+                <MudNavLink Href="/warehouses/items" Icon="@Icons.Material.Filled.Warehouse">Branch APIs</MudNavLink>
             </MudNavGroup>
         </MudNavMenu>
 
@@ -47,9 +54,19 @@
                 <MudSpacer />
                 <!-- AppBar Actions -->
                 <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" Title="Notifications" />
-                <MudMenu Icon="@Icons.Material.Filled.AccountCircle">
-                    <MudMenuItem>Profile</MudMenuItem>
-                    <MudMenuItem>Logout</MudMenuItem>
+                <MudMenu Icon="@Icons.Material.Filled.AccountBox">
+                    <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Label="@userName">
+                        @if (!isAuthenticated)
+                        {
+                            <MudMenuItem Href="/login">Login</MudMenuItem>
+                            <MudMenuItem Href="/register">Register</MudMenuItem>
+                        }
+                        else
+                        {
+                            <MudMenuItem>Profile</MudMenuItem>
+                            <MudMenuItem OnClick="Logout">Logout</MudMenuItem>
+                        }
+                    </MudMenu>
                 </MudMenu>
             </div>
         </MudAppBar>
@@ -63,9 +80,60 @@
 @code {
     private bool drawerOpen = false;
     private bool isDarkMode = false;
+    private bool isAuthenticated;
+    private string userName = "Guest";
 
     private void ToggleNavMenu()
     {
         drawerOpen = !drawerOpen;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateAuthState();
+    }
+
+    private async Task UpdateAuthState()
+    {
+        var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
+        isAuthenticated = !string.IsNullOrEmpty(token);
+        userName = isAuthenticated ? GetUserNameFromToken(token) : "Guest";
+        StateHasChanged();
+    }
+
+    private async Task Logout()
+    {
+        await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
+        isAuthenticated = false;
+        userName = "Guest";
+        Snackbar.Add("Logged out successfully.", Severity.Info);
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+
+    // Simple JWT parsing for demo (use a library for production)
+    private string GetUserNameFromToken(string token)
+    {
+        if (string.IsNullOrEmpty(token)) return "Guest";
+        try
+        {
+            var payload = token.Split('.')[1];
+            var json = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(PadBase64(payload)));
+            var name = System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("name").GetString();
+            return name ?? "User";
+        }
+        catch
+        {
+            return "User";
+        }
+    }
+
+    private string PadBase64(string base64)
+    {
+        switch (base64.Length % 4)
+        {
+            case 2: return base64 + "==";
+            case 3: return base64 + "=";
+            default: return base64;
+        }
     }
 }

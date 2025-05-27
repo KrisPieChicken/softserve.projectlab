@@ -1,5 +1,5 @@
 ﻿using softserve.projectlabs.Shared.Utilities;
-using softserve.projectlabs.Shared.DTOs;
+using softserve.projectlabs.Shared.DTOs.Order;
 
 namespace softserve.projectlabs.Shared.Interfaces
 

@@ -1,4 +1,4 @@
-﻿namespace softserve.projectlabs.Shared.DTOs
+﻿namespace softserve.projectlabs.Shared.DTOs.Warehouse
 {
     public class AddItemToWarehouseDto
     {

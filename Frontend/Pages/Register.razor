@@ -1,0 +1,83 @@
+﻿@page "/register"
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@using MudBlazor
+@using softserve.projectlabs.Shared.DTOs.User
+
+<div style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+    <MudPaper Class="pa-4" >
+        <MudText Typo="Typo.h5" Class="mb-4">Register</MudText>
+        <MudForm @ref="registerForm">
+            <MudTextField @bind-Value="registerDto.UserFirstName" Label="First Name" Required="true" Size="Size.Small" />
+            <MudTextField @bind-Value="registerDto.UserLastName" Label="Last Name" Required="true" Size="Size.Small" />
+            <MudTextField @bind-Value="registerDto.UserContactEmail" Label="Email" Required="true" Size="Size.Small" />
+            <MudTextField @bind-Value="registerDto.UserContactNumber" Label="Contact Number" Required="true" Size="Size.Small" />
+            <MudTextField @bind-Value="registerDto.UserPassword" Label="Password" InputType="InputType.Password" Required="true" Size="Size.Small" />
+            <MudTextField @bind-Value="confirmPassword" Label="Confirm Password" InputType="InputType.Password" Required="true" Size="Size.Small" />
+            <MudTextField @bind-Value="registerDto.BranchId" Label="Branch ID" Required="true" Size="Size.Small" />
+            <MudTextField @bind-Value="roleIdsString" Label="Role IDs (comma separated)" Required="true" Size="Size.Small" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RegisterUser" Class="mt-2">Register</MudButton>
+            <MudText Class="mt-2">
+                Already have an account?
+                <MudLink Href="/login" Class="ms-1">Login here</MudLink>
+            </MudText>
+        </MudForm>
+        @if (!string.IsNullOrEmpty(registerResponse))
+        {
+            <MudText>@registerResponse</MudText>
+        }
+    </MudPaper>
+</div>
+
+@code {
+    private MudForm? registerForm;
+    private UserCreateDto registerDto = new();
+    private string? registerResponse;
+    private string confirmPassword = string.Empty;
+    private string roleIdsString = string.Empty;
+
+    private async Task RegisterUser()
+    {
+        registerResponse = null;
+        await registerForm?.Validate();
+
+        if (registerDto.UserPassword != confirmPassword)
+        {
+            registerResponse = "Passwords do not match.";
+            return;
+        }
+
+        try
+        {
+            registerDto.RoleIds = roleIdsString
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(id => int.Parse(id.Trim()))
+                .ToList();
+        }
+        catch
+        {
+            registerResponse = "Invalid Role IDs format.";
+            return;
+        }
+
+        try
+        {
+            var result = await Http.PostAsJsonAsync("api/users", registerDto);
+            if (result.IsSuccessStatusCode)
+            {
+                registerResponse = "Registration successful. Please login.";
+                Navigation.NavigateTo("/login");
+            }
+            else
+            {
+                var content = await result.Content.ReadAsStringAsync();
+                registerResponse = $"Error: {content}";
+            }
+        }
+        catch (Exception ex)
+        {
+            registerResponse = $"Exception: {ex.Message}";
+        }
+    }
+}

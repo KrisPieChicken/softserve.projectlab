@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using softserve.projectlabs.Shared.DTOs;
 using AutoMapper;
 using softserve.projectlabs.Shared.Interfaces;
+using softserve.projectlabs.Shared.DTOs.Supplier;
 
 namespace API.Controllers.Logistics
 {

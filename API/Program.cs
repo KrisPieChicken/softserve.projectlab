@@ -1,29 +1,15 @@
-﻿using API.Services.Logistics;
-using API.Services.OrderService;
-using API.Services.Interfaces;
-using API.Services.IntAdmin;
-using API.Implementations.Domain;
-using API.Utils.Extensions;
+﻿using API.Utils.Extensions;
 using Microsoft.EntityFrameworkCore;
 using API.Data.Mapping;
 using AutoMapper.EquivalencyExpression;
 using API.Data;
-using softserve.projectlabs.Shared.Interfaces;
 using System.Text.Json.Serialization;
 using System.Text.Json;
-using API.Data.Repositories.IntAdministrationRepository.Interfaces;
-using API.Data.Repositories.IntAdministrationRepository;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using API.Services;
-using softserve.projectlabs.Shared.DTOs;
-using API.Data.Repositories.LogisticsRepositories;
-using API.Data.Repositories.LogisticsRepositories.Interfaces;
 using API.Mappings;
-using API.Data.Repositories.BaseRepository;
-using API.Services.IntAdministration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -123,68 +109,7 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
 // Service registration grouped by category
 //-------------------------------------------------------------------------------
 
-// 1. Logistics services using extension methods
-builder.Services.AddWarehouseServices();
-builder.Services.AddBranchServices();
-builder.Services.AddOrderServices();
-builder.Services.AddSupplierServices();
-
-// 2. Domain services
-builder.Services.AddScoped<CustomerDomain>();
-builder.Services.AddScoped<BranchDomain>();
-builder.Services.AddScoped<OrderDomain>();
-builder.Services.AddScoped<SupplierDomain>();
-builder.Services.AddScoped<WarehouseDomain>();
-builder.Services.AddScoped<CatalogDomain>();
-builder.Services.AddScoped<CategoryDomain>();
-builder.Services.AddScoped<ItemDomain>();
-builder.Services.AddScoped<PermissionDomain>();
-builder.Services.AddScoped<RoleDomain>();
-builder.Services.AddScoped<UserDomain>();
-builder.Services.AddScoped<LineOfCreditDomain>();
-builder.Services.AddScoped<CartDomain>();
-builder.Services.AddScoped<PackageDomain>();
-builder.Services.AddScoped<TokenGenerator>();
-
-// 3. Interface services
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ICustomerService, API.Services.CustomerService>();
-builder.Services.AddScoped<IWarehouseService, WarehouseService>();
-builder.Services.AddScoped<IBranchService, BranchService>();
-builder.Services.AddScoped<IOrderService, OrderService>();
-builder.Services.AddScoped<ISupplierService, SupplierService>();
-builder.Services.AddScoped<ICatalogService, CatalogService>();
-builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddScoped<IItemService, ItemService>();
-builder.Services.AddScoped<IPermissionService, PermissionService>();
-builder.Services.AddScoped<IRoleService, RoleService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ILineOfCreditService, LineOfCreditService>();
-builder.Services.AddScoped<ICartService, CartService>();
-builder.Services.AddScoped<IPackageService, PackageService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<ICookieService, CookieService>();
-
-// 5a. Generic repositories (Base layer)
-builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-builder.Services.AddScoped(typeof(ISoftRepository<>), typeof(SoftRepository<>));
-
-// 5. Repositorios (Data layer)
-builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
-builder.Services.AddScoped<ICatalogRepository, CatalogRepository>();
-builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
-builder.Services.AddScoped<IBranchRepository, BranchRepository>();
-builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
-builder.Services.AddScoped<IItemRepository, ItemRepository>();
-
-//6. Logistics DTOs
-builder.Services.AddScoped<WarehouseDto>();
-builder.Services.AddScoped<BranchDto>();
-builder.Services.AddScoped<OrderDto>();
-builder.Services.AddScoped<SupplierDto>();
+builder.Services.AddProjectServices();
 
 
 //-------------------------------------------------------------------------------
@@ -241,7 +166,7 @@ app.Use(async (context, next) =>
     await next();
 });
 
-// Middleware configuration in correct order
+// Middleware configuration order
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors("AllowFrontend");

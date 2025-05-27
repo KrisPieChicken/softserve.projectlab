@@ -1,5 +1,5 @@
-﻿using softserve.projectlabs.Shared.DTOs;
-using API.Data.Entities;
+﻿using API.Data.Entities;
+using softserve.projectlabs.Shared.DTOs.Supplier;
 
 namespace API.Models.Logistics.Supplier
 {

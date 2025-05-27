@@ -1,7 +1,7 @@
 ﻿using API.Implementations.Domain;
 using API.Models.IntAdmin;
-using softserve.projectlabs.Shared.DTOs;
 using softserve.projectlabs.Shared.DTOs.Item;
+using softserve.projectlabs.Shared.DTOs.Warehouse;
 using softserve.projectlabs.Shared.Interfaces;
 using softserve.projectlabs.Shared.Utilities;
 

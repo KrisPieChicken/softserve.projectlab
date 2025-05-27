@@ -1,0 +1,610 @@
+﻿@page "/warehouse-api-testing"
+@using System.Net.Http.Json
+@using MudBlazor
+@using softserve.projectlabs.Shared.DTOs
+@using softserve.projectlabs.Shared.DTOs.Item
+@using softserve.projectlabs.Shared.DTOs.Warehouse
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5" Class="mb-4">Warehouse API Testing</MudText>
+    <MudExpansionPanels>
+
+        <!-- 1. Get All Warehouses -->
+        <MudExpansionPanel Text="Get All Warehouses">
+            <MudButton Variant="Variant.Filled"  OnClick="GetAllWarehouses" Color="Color.Primary">Send Request</MudButton>
+            @if (warehouses != null)
+            {
+                <MudTable Items="warehouses">
+                    <HeaderContent>
+                        <MudTh>ID</MudTh>
+                        <MudTh>Name</MudTh>
+                        <MudTh>Location</MudTh>
+                        <MudTh>Capacity</MudTh>
+                        <MudTh>Branch</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.WarehouseId</MudTd>
+                        <MudTd>@context.Name</MudTd>
+                        <MudTd>@context.Location</MudTd>
+                        <MudTd>@context.Capacity</MudTd>
+                        <MudTd>@context.BranchId</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudExpansionPanel>
+
+        <!-- 2. Get Warehouse By ID -->
+        <MudExpansionPanel Text="Get Warehouse By ID">
+            <MudTextField @bind-Value="getByIdId" Label="Warehouse ID" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetWarehouseById" Class="mt-2">Send Request</MudButton>
+            @if (warehouse != null)
+            {
+                <MudCard>
+                    <MudCardContent>
+                        <MudText><b>ID:</b> @warehouse.WarehouseId</MudText>
+                        <MudText><b>Name:</b> @warehouse.Name</MudText>
+                        <MudText><b>Location:</b> @warehouse.Location</MudText>
+                        <MudText><b>Capacity:</b> @warehouse.Capacity</MudText>
+                        <MudText><b>Branch:</b> @warehouse.BranchId</MudText>
+                    </MudCardContent>
+                </MudCard>
+            }
+
+        </MudExpansionPanel>
+
+        <!-- 3. Add Item To Warehouse -->
+        <MudExpansionPanel Text="Add Item To Warehouse">
+            <MudAlert Severity="Severity.Info" Dense Class="mb-2">
+                This will <b>link an existing item (by SKU)</b> to the selected warehouse and set its stock. The item must already exist in the system.
+            </MudAlert>
+            <MudTextField @bind-Value="addItemWarehouseId" Label="Warehouse ID" Required="true" />
+            <MudTextField @bind-Value="addItemSku" Label="SKU" Required="true" />
+            <MudTextField @bind-Value="addItemCurrentStock" Label="Current Stock" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddItemToWarehouse" Class="mt-2">Send Request</MudButton>
+            @if (addItemResponse != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@addItemResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 4. Remove Item From Warehouse -->
+        <MudExpansionPanel Text="Remove Item From Warehouse">
+            <MudTextField @bind-Value="removeItemWarehouseId" Label="Warehouse ID" Required="true" />
+            <MudTextField @bind-Value="removeItemSku" Label="SKU" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RemoveItemFromWarehouse" Class="mt-2">Send Request</MudButton>
+            @if (removeItemResponse != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@removeItemResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 5. Transfer Item Between Warehouses -->
+        <MudExpansionPanel Text="Transfer Item Between Warehouses">
+            <MudTextField @bind-Value="transferSourceId" Label="Source Warehouse ID" Required="true" />
+            <MudTextField @bind-Value="transferTargetId" Label="Target Warehouse ID" Required="true" />
+            <MudTextField @bind-Value="transferSku" Label="SKU" Required="true" />
+            <MudTextField @bind-Value="transferQuantity" Label="Quantity" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="TransferItem" Class="mt-2">Send Request</MudButton>
+            @if (transferItemResponse != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@transferItemResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 6. Get Low Stock Items -->
+        <MudExpansionPanel Text="Get Low Stock Items">
+            <MudTextField @bind-Value="lowStockWarehouseId" Label="Warehouse ID" Required="true" />
+            <MudTextField @bind-Value="lowStockThreshold" Label="Threshold" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetLowStockItems" Class="mt-2">Send Request</MudButton>
+            @if (lowStockItems != null)
+            {
+                <MudTable Items="lowStockItems">
+                    <HeaderContent>
+                        <MudTh>SKU</MudTh>
+                        <MudTh>Name</MudTh>
+                        <MudTh>Description</MudTh>
+                        <MudTh>Current Stock</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.Sku</MudTd>
+                        <MudTd>@context.ItemName</MudTd>
+                        <MudTd>@context.ItemDescription</MudTd>
+                        <MudTd>@context.CurrentStock</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+            else if (!string.IsNullOrEmpty(lowStockResponse))
+            {
+                <MudText>@lowStockResponse</MudText>
+            }
+
+        </MudExpansionPanel>
+
+        <!-- 7. Get Total Inventory Value -->
+        <MudExpansionPanel Text="Get Total Inventory Value">
+            <MudTextField @bind-Value="inventoryValueWarehouseId" Label="Warehouse ID" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetTotalInventoryValue" Class="mt-2">Send Request</MudButton>
+            @if (inventoryValue != null)
+            {
+                <MudText Color="Color.Success" Typo="Typo.h6">Total Inventory Value: @($"{inventoryValue:C}")</MudText>
+            }
+            else if (!string.IsNullOrEmpty(inventoryValueResponse))
+            {
+                <MudText>@inventoryValueResponse</MudText>
+            }
+        </MudExpansionPanel>
+
+        <!-- 8. Generate Inventory Report -->
+        <MudExpansionPanel Text="Generate Inventory Report">
+            <MudTextField @bind-Value="inventoryReportWarehouseId" Label="Warehouse ID" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GenerateInventoryReport" Class="mt-2">Send Request</MudButton>
+            @if (inventoryReportItems != null)
+            {
+                <MudTable Items="inventoryReportItems">
+                    <HeaderContent>
+                        <MudTh>SKU</MudTh>
+                        <MudTh>Name</MudTh>
+                        <MudTh>Description</MudTh>
+                        <MudTh>Current Stock</MudTh>
+                        <MudTh>Unit Cost</MudTh>
+                        <MudTh>Price</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.Sku</MudTd>
+                        <MudTd>@context.ItemName</MudTd>
+                        <MudTd>@context.ItemDescription</MudTd>
+                        <MudTd>@context.CurrentStock</MudTd>
+                        <MudTd>@context.ItemUnitCost</MudTd>
+                        <MudTd>@context.ItemPrice</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+            else if (!string.IsNullOrEmpty(inventoryReportResponse))
+            {
+                <MudText>@inventoryReportResponse</MudText>
+            }
+
+        </MudExpansionPanel>
+
+        <!-- 9. Soft Delete Warehouse -->
+        <MudExpansionPanel Text="Soft Delete Warehouse">
+            <MudTextField @bind-Value="softDeleteWarehouseId" Label="Warehouse ID" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SoftDeleteWarehouse" Class="mt-2">Send Request</MudButton>
+            @if (softDeleteResponse != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@softDeleteResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 10. Restore Soft-Deleted Warehouse -->
+        <MudExpansionPanel Text="Restore Soft-Deleted Warehouse">
+            <MudTextField @bind-Value="restoreWarehouseId" Label="Warehouse ID" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RestoreWarehouse" Class="mt-2">Send Request</MudButton>
+            @if (restoreResponse != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@restoreResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 11 Create Warehouse -->
+        <MudExpansionPanel Text="Create Warehouse">
+            <MudForm @ref="createWarehouseForm">
+                <MudTextField @bind-Value="createWarehouseDto.Name" Label="Name" Required="true" />
+                <MudTextField @bind-Value="createWarehouseDto.Location" Label="Location" Required="true" />
+                <MudTextField @bind-Value="createWarehouseDto.Capacity" Label="Capacity" Required="true" InputType="InputType.Number" />
+                <MudTextField @bind-Value="createWarehouseDto.BranchId" Label="Branch ID" Required="true" InputType="InputType.Number" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateWarehouse" Class="mt-2">Send Request</MudButton>
+            </MudForm>
+            @if (createWarehouseResponse != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@createWarehouseResponse</MudText>
+                </MudPaper>
+            }
+            @if (createdWarehouse != null)
+            {
+                <MudCard Class="mt-2">
+                    <MudCardContent>
+                        <MudText><b>ID:</b> @createdWarehouse.WarehouseId</MudText>
+                        <MudText><b>Name:</b> @createdWarehouse.Name</MudText>
+                        <MudText><b>Location:</b> @createdWarehouse.Location</MudText>
+                        <MudText><b>Capacity:</b> @createdWarehouse.Capacity</MudText>
+                        <MudText><b>Branch:</b> @createdWarehouse.BranchId</MudText>
+                    </MudCardContent>
+                </MudCard>
+            }
+        </MudExpansionPanel>
+
+
+    </MudExpansionPanels>
+</MudPaper>
+
+@code {
+    // 1. Get All Warehouses
+    private string? allWarehousesResponse;
+    private List<WarehouseResponseDto>? warehouses;
+
+    private async Task GetAllWarehouses()
+    {
+        warehouses = null;
+        try
+        {
+            warehouses = await Http.GetFromJsonAsync<List<WarehouseResponseDto>>("api/warehouses");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+
+    // 2. Get Warehouse By ID
+    private int getByIdId;
+    private string? getByIdResponse;
+    private WarehouseResponseDto? warehouse;
+    private async Task GetWarehouseById()
+    {
+        warehouse = null;
+        try
+        {
+            warehouse = await Http.GetFromJsonAsync<WarehouseResponseDto>($"api/warehouses/{getByIdId}");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    // 3. Add Item To Warehouse
+    private int addItemWarehouseId;
+    private int addItemSku;
+    private int addItemCurrentStock;
+    private string? addItemResponse;
+    private async Task AddItemToWarehouse()
+    {
+        addItemResponse = null;
+        if (addItemWarehouseId <= 0 || addItemSku <= 0 || addItemCurrentStock < 0)
+        {
+            Snackbar.Add("Please enter valid values for all fields.", Severity.Warning);
+            return;
+        }
+        var dto = new AddItemToWarehouseDto
+            {
+                WarehouseId = addItemWarehouseId,
+                Sku = addItemSku,
+                CurrentStock = addItemCurrentStock
+            };
+        try
+        {
+            var result = await Http.PostAsJsonAsync($"api/warehouses/{addItemWarehouseId}/items", dto);
+            var content = await result.Content.ReadAsStringAsync();
+            addItemResponse = result.IsSuccessStatusCode
+                ? "Success"
+                : $"Error {result.StatusCode}: {content}";
+        }
+        catch (Exception ex)
+        {
+            addItemResponse = $"Exception: {ex.Message}";
+        }
+    }
+
+    // 4. Remove Item From Warehouse
+    private int removeItemWarehouseId;
+    private int removeItemSku;
+    private string? removeItemResponse;
+    private async Task RemoveItemFromWarehouse()
+    {
+        removeItemResponse = null;
+        if (removeItemWarehouseId <= 0 || removeItemSku <= 0)
+        {
+            Snackbar.Add("Please enter valid values for Warehouse ID and SKU.", Severity.Warning);
+            return;
+        }
+        try
+        {
+            var result = await Http.DeleteAsync($"api/warehouses/{removeItemWarehouseId}/items/{removeItemSku}");
+            var content = await result.Content.ReadAsStringAsync();
+            if (result.IsSuccessStatusCode)
+            {
+                removeItemResponse = "Item successfully removed from warehouse.";
+                Snackbar.Add(removeItemResponse, Severity.Success);
+            }
+            else
+            {
+                removeItemResponse = $"Error {result.StatusCode}: {content}";
+                Snackbar.Add(removeItemResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            removeItemResponse = $"Exception: {ex.Message}";
+            Snackbar.Add(removeItemResponse, Severity.Error);
+        }
+    }
+
+    // 5. Transfer Item Between Warehouses
+    private int transferSourceId;
+    private int transferTargetId;
+    private int transferSku;
+    private int transferQuantity;
+    private string? transferItemResponse;
+    private async Task TransferItem()
+    {
+        transferItemResponse = null;
+        if (transferSourceId <= 0 || transferTargetId <= 0 || transferSku <= 0 || transferQuantity <= 0)
+        {
+            Snackbar.Add("Please enter valid values for all fields.", Severity.Warning);
+            return;
+        }
+        var dto = new TransferItemDto
+            {
+                SourceWarehouseId = transferSourceId,
+                TargetWarehouseId = transferTargetId,
+                Sku = transferSku,
+                Quantity = transferQuantity
+            };
+        try
+        {
+            var result = await Http.PostAsJsonAsync($"api/warehouses/{transferSourceId}/items/{transferTargetId}", dto);
+            var content = await result.Content.ReadAsStringAsync();
+            if (result.IsSuccessStatusCode)
+            {
+                transferItemResponse = "Item successfully transferred between warehouses.";
+                Snackbar.Add(transferItemResponse, Severity.Success);
+            }
+            else
+            {
+                transferItemResponse = $"Error {result.StatusCode}: {content}";
+                Snackbar.Add(transferItemResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            transferItemResponse = $"Exception: {ex.Message}";
+            Snackbar.Add(transferItemResponse, Severity.Error);
+        }
+    }
+
+    // 6. Get Low Stock Items
+    private int lowStockWarehouseId;
+    private int lowStockThreshold;
+    private string? lowStockResponse;
+    private List<ItemDto>? lowStockItems;
+    private async Task GetLowStockItems()
+    {
+        lowStockResponse = null;
+        lowStockItems = null;
+        if (lowStockWarehouseId <= 0 || lowStockThreshold < 0)
+        {
+            Snackbar.Add("Please enter valid values for Warehouse ID and Threshold.", Severity.Warning);
+            return;
+        }
+        try
+        {
+            var result = await Http.GetAsync($"api/warehouses/{lowStockWarehouseId}/stock?threshold={lowStockThreshold}");
+            if (result.IsSuccessStatusCode)
+            {
+                lowStockItems = await result.Content.ReadFromJsonAsync<List<ItemDto>>();
+                if (lowStockItems == null || lowStockItems.Count == 0)
+                {
+                    lowStockResponse = "No low stock items found.";
+                    Snackbar.Add(lowStockResponse, Severity.Info);
+                }
+            }
+            else
+            {
+                var content = await result.Content.ReadAsStringAsync();
+                lowStockResponse = $"Error {result.StatusCode}: {content}";
+                Snackbar.Add(lowStockResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            lowStockResponse = $"Exception: {ex.Message}";
+            Snackbar.Add(lowStockResponse, Severity.Error);
+        }
+    }
+
+    // 7. Get Total Inventory Value
+    private int inventoryValueWarehouseId;
+    private string? inventoryValueResponse;
+    private decimal? inventoryValue;
+    private async Task GetTotalInventoryValue()
+    {
+        inventoryValueResponse = null;
+        inventoryValue = null;
+        if (inventoryValueWarehouseId <= 0)
+        {
+            Snackbar.Add("Please enter a valid Warehouse ID.", Severity.Warning);
+            return;
+        }
+        try
+        {
+            var result = await Http.GetAsync($"api/warehouses/{inventoryValueWarehouseId}/inventory");
+            if (result.IsSuccessStatusCode)
+            {
+                inventoryValue = await result.Content.ReadFromJsonAsync<decimal>();
+                inventoryValueResponse = $"Total Inventory Value: {inventoryValue:C}";
+                Snackbar.Add("Inventory value retrieved successfully.", Severity.Success);
+            }
+            else
+            {
+                var content = await result.Content.ReadAsStringAsync();
+                inventoryValueResponse = $"Error {result.StatusCode}: {content}";
+                Snackbar.Add(inventoryValueResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            inventoryValueResponse = $"Exception: {ex.Message}";
+            Snackbar.Add(inventoryValueResponse, Severity.Error);
+        }
+    }
+
+    // 8. Generate Inventory Report
+    private int inventoryReportWarehouseId;
+    private string? inventoryReportResponse;
+    private List<ItemDto>? inventoryReportItems;
+    private async Task GenerateInventoryReport()
+    {
+        inventoryReportItems = null;
+        inventoryReportResponse = null;
+        if (inventoryReportWarehouseId <= 0)
+        {
+            Snackbar.Add("Please enter a valid Warehouse ID.", Severity.Warning);
+            return;
+        }
+        try
+        {
+            var result = await Http.GetAsync($"api/warehouses/{inventoryReportWarehouseId}/inventory-report");
+            if (result.IsSuccessStatusCode)
+            {
+                // Try to deserialize as a list of ItemDto
+                inventoryReportItems = await result.Content.ReadFromJsonAsync<List<ItemDto>>();
+                if (inventoryReportItems == null || inventoryReportItems.Count == 0)
+                {
+                    inventoryReportResponse = "No items found in the inventory report.";
+                    Snackbar.Add(inventoryReportResponse, Severity.Info);
+                }
+                else
+                {
+                    Snackbar.Add("Inventory report generated successfully.", Severity.Success);
+                }
+            }
+            else
+            {
+                var content = await result.Content.ReadAsStringAsync();
+                inventoryReportResponse = $"Error {result.StatusCode}: {content}";
+                Snackbar.Add(inventoryReportResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            inventoryReportResponse = $"Exception: {ex.Message}";
+            Snackbar.Add(inventoryReportResponse, Severity.Error);
+        }
+    }
+
+
+    // 9. Soft Delete Warehouse
+    private int softDeleteWarehouseId;
+    private string? softDeleteResponse;
+    private async Task SoftDeleteWarehouse()
+    {
+        softDeleteResponse = null;
+        if (softDeleteWarehouseId <= 0)
+        {
+            Snackbar.Add("Please enter a valid Warehouse ID.", Severity.Warning);
+            return;
+        }
+        try
+        {
+            var result = await Http.DeleteAsync($"api/warehouses/{softDeleteWarehouseId}");
+            if (result.IsSuccessStatusCode)
+            {
+                softDeleteResponse = "Warehouse soft-deleted successfully.";
+                Snackbar.Add(softDeleteResponse, Severity.Success);
+            }
+            else
+            {
+                var content = await result.Content.ReadAsStringAsync();
+                softDeleteResponse = $"Error {result.StatusCode}: {content}";
+                Snackbar.Add(softDeleteResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            softDeleteResponse = $"Exception: {ex.Message}";
+            Snackbar.Add(softDeleteResponse, Severity.Error);
+        }
+    }
+
+    // 10. Restore Soft-Deleted Warehouse
+    private int restoreWarehouseId;
+    private string? restoreResponse;
+    private async Task RestoreWarehouse()
+    {
+        restoreResponse = null;
+        if (restoreWarehouseId <= 0)
+        {
+            Snackbar.Add("Please enter a valid Warehouse ID.", Severity.Warning);
+            return;
+        }
+        try
+        {
+            var result = await Http.PostAsync($"api/warehouses/{restoreWarehouseId}/restore", null);
+            var content = await result.Content.ReadAsStringAsync();
+            if (result.IsSuccessStatusCode)
+            {
+                restoreResponse = "Warehouse restored successfully.";
+                Snackbar.Add(restoreResponse, Severity.Success);
+            }
+            else
+            {
+                restoreResponse = $"Error {result.StatusCode}: {content}";
+                Snackbar.Add(restoreResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            restoreResponse = $"Exception: {ex.Message}";
+            Snackbar.Add(restoreResponse, Severity.Error);
+        }
+    }
+
+    // Create Warehouse
+    private MudForm? createWarehouseForm;
+    private WarehouseDto createWarehouseDto = new();
+    private string? createWarehouseResponse;
+    private WarehouseResponseDto? createdWarehouse;
+
+    private async Task CreateWarehouse()
+    {
+        createWarehouseResponse = null;
+        createdWarehouse = null;
+        await createWarehouseForm?.Validate();
+        if (string.IsNullOrWhiteSpace(createWarehouseDto.Name) ||
+            string.IsNullOrWhiteSpace(createWarehouseDto.Location) ||
+            createWarehouseDto.Capacity <= 0 ||
+            createWarehouseDto.BranchId <= 0)
+        {
+            Snackbar.Add("Please enter valid values for all fields.", Severity.Warning);
+            return;
+        }
+        try
+        {
+            var result = await Http.PostAsJsonAsync("api/warehouses", createWarehouseDto);
+            if (result.IsSuccessStatusCode)
+            {
+                createdWarehouse = await result.Content.ReadFromJsonAsync<WarehouseResponseDto>();
+                createWarehouseResponse = "Warehouse created successfully.";
+                Snackbar.Add(createWarehouseResponse, Severity.Success);
+            }
+            else
+            {
+                var content = await result.Content.ReadAsStringAsync();
+                createWarehouseResponse = $"Error {result.StatusCode}: {content}";
+                Snackbar.Add(createWarehouseResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            createWarehouseResponse = $"Exception: {ex.Message}";
+            Snackbar.Add(createWarehouseResponse, Severity.Error);
+        }
+    }
+
+}

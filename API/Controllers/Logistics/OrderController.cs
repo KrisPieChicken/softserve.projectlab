@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using softserve.projectlabs.Shared.Utilities;
 using softserve.projectlabs.Shared.Interfaces;
-using softserve.projectlabs.Shared.DTOs;
 using AutoMapper;
 using API.Models.Logistics.Order;
+using softserve.projectlabs.Shared.DTOs.Order;
 
 namespace API.Controllers.Logistics
 {

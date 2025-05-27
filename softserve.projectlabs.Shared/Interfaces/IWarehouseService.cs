@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using softserve.projectlabs.Shared.DTOs;
 using softserve.projectlabs.Shared.DTOs.Item;
+using softserve.projectlabs.Shared.DTOs.Warehouse;
 using softserve.projectlabs.Shared.Utilities;
 
 namespace softserve.projectlabs.Shared.Interfaces

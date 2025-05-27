@@ -1,5 +1,5 @@
 ﻿using API.Data.Entities;
-using softserve.projectlabs.Shared.DTOs;
+using softserve.projectlabs.Shared.DTOs.Branch;
 
 namespace API.Models.Logistics.Branch
 {

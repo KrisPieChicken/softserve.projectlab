@@ -9,6 +9,13 @@
 		<!-- Suppress warnings for missing XML comments -->
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <Compile Remove="Abstractions\**" />
+	  <Content Remove="Abstractions\**" />
+	  <EmbeddedResource Remove="Abstractions\**" />
+	  <None Remove="Abstractions\**" />
+	</ItemGroup>
+
     <ItemGroup>
 		<PackageReference Include="AutoMapper" Version="12.0.1" />
 		<PackageReference Include="AutoMapper.Collection" Version="9.0.0" />
@@ -32,10 +39,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\softserve.projectlabs.Shared\softserve.projectlabs.Shared.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Abstractions\" />
     </ItemGroup>
 
 </Project>
