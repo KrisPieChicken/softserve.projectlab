@@ -5,6 +5,7 @@ using API.Models.Logistics.Warehouses;
 using softserve.projectlabs.Shared.DTOs;
 using Moq;
 using API.Models.IntAdmin;
+using softserve.projectlabs.Shared.DTOs.Warehouse;
 
 namespace UnitTests.WarehouseTests;
 

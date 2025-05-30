@@ -4,6 +4,7 @@ using API.Implementations.Domain;
 using API.Services.Logistics;
 using Moq;
 using softserve.projectlabs.Shared.DTOs;
+using softserve.projectlabs.Shared.DTOs.Supplier;
 
 namespace UnitTests.Supplier
 {

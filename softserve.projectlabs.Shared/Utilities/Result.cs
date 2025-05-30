@@ -5,9 +5,9 @@ public class Result<T>
     public bool IsSuccess { get; set; }
     public string ErrorMessage { get; set; }
     public T Data { get; set; }
-    public int ErrorCode { get; set; }  // Optional error code
-    public string StackTrace { get; set; }  // Optional stack trace
-    public bool IsNoContent { get; set; }  // Flag to indicate No Content response
+    public int ErrorCode { get; set; }  
+    public string StackTrace { get; set; }  
+    public bool IsNoContent { get; set; }  
 
     // Success result
     public static Result<T> Success(T data)

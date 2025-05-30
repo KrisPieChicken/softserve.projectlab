@@ -1,5 +1,4 @@
 ﻿using API.Data.Entities;
-using softserve.projectlabs.Shared.DTOs;
 using softserve.projectlabs.Shared.DTOs.Order;
 
 namespace API.Models.Logistics.Order

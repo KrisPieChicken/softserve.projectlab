@@ -4,6 +4,7 @@ using API.Data.Entities;
 using API.Data.Repositories.LogisticsRepositories.Interfaces;
 using softserve.projectlabs.Shared.DTOs;
 using BranchTest = API.Models.Logistics.Branch.Branch;
+using softserve.projectlabs.Shared.DTOs.Branch;
 
 
 namespace UnitTests.Branch

@@ -6,10 +6,10 @@ namespace softserve.projectlabs.Shared.Interfaces
 {
     public interface IBranchService
     {
-        Task<Result<BranchDto>> AddBranchAsync(BranchDto branch); // Updated to async
-        Task<Result<BranchDto>> UpdateBranchAsync(BranchDto branch); // Updated to async
-        Task<Result<BranchDto>> GetBranchByIdAsync(int branchId); // Updated to async
-        Task<Result<List<BranchDto>>> GetAllBranchesAsync(); // Updated to async
-        Task<Result<bool>> RemoveBranchAsync(int branchId); // Updated to async
+        Task<Result<BranchDto>> AddBranchAsync(BranchDto branch); 
+        Task<Result<BranchDto>> UpdateBranchAsync(BranchDto branch); 
+        Task<Result<BranchDto>> GetBranchByIdAsync(int branchId); 
+        Task<Result<List<BranchDto>>> GetAllBranchesAsync(); 
+        Task<Result<bool>> RemoveBranchAsync(int branchId); 
     }
 }
