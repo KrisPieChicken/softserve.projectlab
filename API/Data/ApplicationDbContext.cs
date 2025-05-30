@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using API.Data.Entities;
+using API;
 using Microsoft.EntityFrameworkCore;
+using API.Data.Entities;
 
 namespace API.Data;
 
@@ -18,8 +19,6 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<BranchEntity> BranchEntities { get; set; }
 
-    public virtual DbSet<BusinessCustomerEntity> BusinessCustomerEntities { get; set; }
-
     public virtual DbSet<CartEntity> CartEntities { get; set; }
 
     public virtual DbSet<CartItemEntity> CartItemEntities { get; set; }
@@ -30,15 +29,9 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<CategoryEntity> CategoryEntities { get; set; }
 
-    public virtual DbSet<CreditTransactionEntity> CreditTransactionEntities { get; set; }
-
     public virtual DbSet<CustomerEntity> CustomerEntities { get; set; }
 
-    public virtual DbSet<IndividualCustomerEntity> IndividualCustomerEntities { get; set; }
-
     public virtual DbSet<ItemEntity> ItemEntities { get; set; }
-
-    public virtual DbSet<LineOfCreditEntity> LineOfCreditEntities { get; set; }
 
     public virtual DbSet<OrderEntity> OrderEntities { get; set; }
 
@@ -51,8 +44,6 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<PackageNoteEntity> PackageNoteEntities { get; set; }
 
     public virtual DbSet<PermissionEntity> PermissionEntities { get; set; }
-
-    public virtual DbSet<PremiumCustomerEntity> PremiumCustomerEntities { get; set; }
 
     public virtual DbSet<RoleEntity> RoleEntities { get; set; }
 
@@ -74,7 +65,7 @@ public partial class ApplicationDbContext : DbContext
     {
         modelBuilder.Entity<BranchEntity>(entity =>
         {
-            entity.HasKey(e => e.BranchId).HasName("PK__BranchEn__A1682FC5D82710C8");
+            entity.HasKey(e => e.BranchId).HasName("PK__BranchEn__A1682FC5784BD340");
 
             entity.ToTable("BranchEntity");
 
@@ -104,46 +95,9 @@ public partial class ApplicationDbContext : DbContext
                 .HasColumnType("datetime");
         });
 
-        modelBuilder.Entity<BusinessCustomerEntity>(entity =>
-        {
-            entity.HasKey(e => e.CustomerId).HasName("PK__Business__A4AE64D80B9794DD");
-
-            entity.ToTable("BusinessCustomerEntity");
-
-            entity.Property(e => e.CustomerId).ValueGeneratedNever();
-            entity.Property(e => e.AnnualRevenue).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.BusinessSize)
-                .HasMaxLength(20)
-                .IsUnicode(false);
-            entity.Property(e => e.CompanyName)
-                .HasMaxLength(255)
-                .IsUnicode(false);
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getutcdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.CreditTerms)
-                .HasMaxLength(20)
-                .IsUnicode(false);
-            entity.Property(e => e.Industry)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-            entity.Property(e => e.TaxId)
-                .HasMaxLength(50)
-                .IsUnicode(false);
-            entity.Property(e => e.UpdatedAt)
-                .HasDefaultValueSql("(getutcdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.VolumeDiscountRate).HasColumnType("decimal(5, 2)");
-
-            entity.HasOne(d => d.Customer).WithOne(p => p.BusinessCustomerEntity)
-                .HasForeignKey<BusinessCustomerEntity>(d => d.CustomerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_BusinessCustomer_Customer");
-        });
-
         modelBuilder.Entity<CartEntity>(entity =>
         {
-            entity.HasKey(e => e.CartId).HasName("PK__CartEnti__51BCD7B7C56C7012");
+            entity.HasKey(e => e.CartId).HasName("PK__CartEnti__51BCD7B79057F860");
 
             entity.ToTable("CartEntity");
 
@@ -162,7 +116,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<CartItemEntity>(entity =>
         {
-            entity.HasKey(e => new { e.CartId, e.Sku }).HasName("PK__CartItem__0D1D2A8BEBD6F90E");
+            entity.HasKey(e => new { e.CartId, e.Sku }).HasName("PK__CartItem__0D1D2A8B0C73A29D");
 
             entity.ToTable("CartItemEntity");
 
@@ -179,7 +133,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<CatalogCategoryEntity>(entity =>
         {
-            entity.HasKey(e => new { e.CatalogId, e.CategoryId }).HasName("PK__CatalogC__63C1A8C8C046004B");
+            entity.HasKey(e => new { e.CatalogId, e.CategoryId }).HasName("PK__CatalogC__63C1A8C888BF6384");
 
             entity.ToTable("CatalogCategoryEntity");
 
@@ -200,7 +154,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<CatalogEntity>(entity =>
         {
-            entity.HasKey(e => e.CatalogId).HasName("PK__CatalogE__C2513B68ADF4816E");
+            entity.HasKey(e => e.CatalogId).HasName("PK__CatalogE__C2513B68E017C975");
 
             entity.ToTable("CatalogEntity");
 
@@ -218,7 +172,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<CategoryEntity>(entity =>
         {
-            entity.HasKey(e => e.CategoryId).HasName("PK__Category__19093A0BF0268371");
+            entity.HasKey(e => e.CategoryId).HasName("PK__Category__19093A0B125F492B");
 
             entity.ToTable("CategoryEntity");
 
@@ -233,42 +187,9 @@ public partial class ApplicationDbContext : DbContext
                 .HasColumnType("datetime");
         });
 
-        modelBuilder.Entity<CreditTransactionEntity>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__CreditTr__3214EC075548FA2F");
-
-            entity.ToTable("CreditTransactionEntity");
-
-            entity.Property(e => e.Id)
-                .HasMaxLength(100)
-                .IsUnicode(false)
-                .HasDefaultValueSql("(newid())");
-            entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getutcdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.Description)
-                .HasMaxLength(255)
-                .IsUnicode(false);
-            entity.Property(e => e.TransactionDate)
-                .HasDefaultValueSql("(getutcdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.TransactionType)
-                .HasMaxLength(50)
-                .IsUnicode(false);
-            entity.Property(e => e.UpdatedAt)
-                .HasDefaultValueSql("(getutcdate())")
-                .HasColumnType("datetime");
-
-            entity.HasOne(d => d.LineOfCredit).WithMany(p => p.CreditTransactionEntities)
-                .HasForeignKey(d => d.LineOfCreditId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_CreditTransaction_LineOfCredit");
-        });
-
         modelBuilder.Entity<CustomerEntity>(entity =>
         {
-            entity.HasKey(e => e.CustomerId).HasName("PK__Customer__A4AE64D8EB61FF49");
+            entity.HasKey(e => e.CustomerId).HasName("PK__Customer__A4AE64D8B0F831E9");
 
             entity.ToTable("CustomerEntity");
 
@@ -289,9 +210,6 @@ public partial class ApplicationDbContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.CustomerName)
                 .HasMaxLength(255)
-                .IsUnicode(false);
-            entity.Property(e => e.CustomerType)
-                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.Email)
                 .HasMaxLength(150)
@@ -317,33 +235,9 @@ public partial class ApplicationDbContext : DbContext
                 .IsUnicode(false);
         });
 
-        modelBuilder.Entity<IndividualCustomerEntity>(entity =>
-        {
-            entity.HasKey(e => e.CustomerId).HasName("PK__Individu__A4AE64D8186B15D3");
-
-            entity.ToTable("IndividualCustomerEntity");
-
-            entity.Property(e => e.CustomerId).ValueGeneratedNever();
-            entity.Property(e => e.CommunicationPreference)
-                .HasMaxLength(20)
-                .IsUnicode(false);
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getutcdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.LastPurchaseDate).HasColumnType("datetime");
-            entity.Property(e => e.UpdatedAt)
-                .HasDefaultValueSql("(getutcdate())")
-                .HasColumnType("datetime");
-
-            entity.HasOne(d => d.Customer).WithOne(p => p.IndividualCustomerEntity)
-                .HasForeignKey<IndividualCustomerEntity>(d => d.CustomerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_IndividualCustomer_Customer");
-        });
-
         modelBuilder.Entity<ItemEntity>(entity =>
         {
-            entity.HasKey(e => e.Sku).HasName("PK__ItemEnti__CA1FD3C4587704EB");
+            entity.HasKey(e => e.Sku).HasName("PK__ItemEnti__CA1FD3C42E172173");
 
             entity.ToTable("ItemEntity");
 
@@ -375,31 +269,9 @@ public partial class ApplicationDbContext : DbContext
                 .HasConstraintName("FK_Item_Category");
         });
 
-        modelBuilder.Entity<LineOfCreditEntity>(entity =>
-        {
-            entity.HasKey(e => e.CustomerId).HasName("PK__LineOfCr__A4AE64D817156FFA");
-
-            entity.ToTable("LineOfCreditEntity");
-
-            entity.Property(e => e.CustomerId).ValueGeneratedNever();
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getutcdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.CreditLimit).HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.CurrentBalance).HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.UpdatedAt)
-                .HasDefaultValueSql("(getutcdate())")
-                .HasColumnType("datetime");
-
-            entity.HasOne(d => d.Customer).WithOne(p => p.LineOfCreditEntity)
-                .HasForeignKey<LineOfCreditEntity>(d => d.CustomerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_LineOfCredit_Customer");
-        });
-
         modelBuilder.Entity<OrderEntity>(entity =>
         {
-            entity.HasKey(e => e.OrderId).HasName("PK__OrderEnt__C3905BCFB5575C85");
+            entity.HasKey(e => e.OrderId).HasName("PK__OrderEnt__C3905BCFC5A9EEC9");
 
             entity.ToTable("OrderEntity");
 
@@ -423,7 +295,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<OrderItemEntity>(entity =>
         {
-            entity.HasKey(e => new { e.OrderId, e.Sku }).HasName("PK__OrderIte__9F31A6F3D69853B4");
+            entity.HasKey(e => new { e.OrderId, e.Sku }).HasName("PK__OrderIte__9F31A6F3405C047F");
 
             entity.ToTable("OrderItemEntity");
 
@@ -440,7 +312,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<PackageEntity>(entity =>
         {
-            entity.HasKey(e => e.PackageId).HasName("PK__PackageE__322035CC955D1CC2");
+            entity.HasKey(e => e.PackageId).HasName("PK__PackageE__322035CC4D477BD2");
 
             entity.ToTable("PackageEntity");
 
@@ -457,7 +329,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<PackageItemEntity>(entity =>
         {
-            entity.HasKey(e => new { e.PackageId, e.Sku }).HasName("PK__PackageI__6E81C8F0E035E5EE");
+            entity.HasKey(e => new { e.PackageId, e.Sku }).HasName("PK__PackageI__6E81C8F0B536A403");
 
             entity.ToTable("PackageItemEntity");
 
@@ -474,7 +346,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<PackageNoteEntity>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PackageN__3214EC076E97DB10");
+            entity.HasKey(e => e.Id).HasName("PK__PackageN__3214EC07323F733C");
 
             entity.ToTable("PackageNoteEntity");
 
@@ -503,7 +375,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<PermissionEntity>(entity =>
         {
-            entity.HasKey(e => e.PermissionId).HasName("PK__Permissi__EFA6FB2F5E3B142D");
+            entity.HasKey(e => e.PermissionId).HasName("PK__Permissi__EFA6FB2FD1F87F46");
 
             entity.ToTable("PermissionEntity");
 
@@ -519,35 +391,9 @@ public partial class ApplicationDbContext : DbContext
                 .HasColumnType("datetime");
         });
 
-        modelBuilder.Entity<PremiumCustomerEntity>(entity =>
-        {
-            entity.HasKey(e => e.CustomerId).HasName("PK__PremiumC__A4AE64D803A4D2B2");
-
-            entity.ToTable("PremiumCustomerEntity");
-
-            entity.Property(e => e.CustomerId).ValueGeneratedNever();
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getutcdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.DiscountRate).HasColumnType("decimal(5, 2)");
-            entity.Property(e => e.MembershipExpiryDate).HasColumnType("datetime");
-            entity.Property(e => e.MembershipStartDate).HasColumnType("datetime");
-            entity.Property(e => e.TierLevel)
-                .HasMaxLength(20)
-                .IsUnicode(false);
-            entity.Property(e => e.UpdatedAt)
-                .HasDefaultValueSql("(getutcdate())")
-                .HasColumnType("datetime");
-
-            entity.HasOne(d => d.Customer).WithOne(p => p.PremiumCustomerEntity)
-                .HasForeignKey<PremiumCustomerEntity>(d => d.CustomerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_PremiumCustomer_Customer");
-        });
-
         modelBuilder.Entity<RoleEntity>(entity =>
         {
-            entity.HasKey(e => e.RoleId).HasName("PK__RoleEnti__8AFACE1A4FE219FE");
+            entity.HasKey(e => e.RoleId).HasName("PK__RoleEnti__8AFACE1AD35F2039");
 
             entity.ToTable("RoleEntity");
 
@@ -565,7 +411,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<RolePermissionEntity>(entity =>
         {
-            entity.HasKey(e => new { e.RoleId, e.PermissionId }).HasName("PK__RolePerm__6400A1A850873195");
+            entity.HasKey(e => new { e.RoleId, e.PermissionId }).HasName("PK__RolePerm__6400A1A8EC670C6E");
 
             entity.ToTable("RolePermissionEntity");
 
@@ -589,7 +435,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<SupplierEntity>(entity =>
         {
-            entity.HasKey(e => e.SupplierId).HasName("PK__Supplier__4BE666B47FC95A5D");
+            entity.HasKey(e => e.SupplierId).HasName("PK__Supplier__4BE666B46B621C6A");
 
             entity.ToTable("SupplierEntity");
 
@@ -613,7 +459,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<SupplierItemEntity>(entity =>
         {
-            entity.HasKey(e => new { e.SupplierId, e.Sku }).HasName("PK__Supplier__17479B889BD9D329");
+            entity.HasKey(e => new { e.SupplierId, e.Sku }).HasName("PK__Supplier__17479B88EBC0F204");
 
             entity.ToTable("SupplierItemEntity");
 
@@ -634,7 +480,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<UserEntity>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__UserEnti__1788CC4C4CF8683D");
+            entity.HasKey(e => e.UserId).HasName("PK__UserEnti__1788CC4C3732C7DB");
 
             entity.ToTable("UserEntity");
 
@@ -643,6 +489,8 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getutcdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.PasswordHash).HasDefaultValueSql("(0x)");
+            entity.Property(e => e.PasswordSalt).HasDefaultValueSql("(0x)");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getutcdate())")
                 .HasColumnType("datetime");
@@ -658,14 +506,6 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.UserLastName)
                 .HasMaxLength(100)
                 .IsUnicode(false);
-            entity.Property(e => e.PasswordHash)
-                .IsRequired()
-                .HasColumnType("varbinary(max)");
-
-            entity.Property(e => e.PasswordSalt)
-                .IsRequired()
-                .HasColumnType("varbinary(max)");
-
 
             entity.HasOne(d => d.Branch).WithMany(p => p.UserEntities)
                 .HasForeignKey(d => d.BranchId)
@@ -675,7 +515,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<UserRoleEntity>(entity =>
         {
-            entity.HasKey(e => new { e.UserId, e.RoleId }).HasName("PK__UserRole__AF2760AD1079C99E");
+            entity.HasKey(e => new { e.UserId, e.RoleId }).HasName("PK__UserRole__AF2760AD23853F31");
 
             entity.ToTable("UserRoleEntity");
 
@@ -696,7 +536,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<WarehouseEntity>(entity =>
         {
-            entity.HasKey(e => e.WarehouseId).HasName("PK__Warehous__2608AFF9077A2230");
+            entity.HasKey(e => e.WarehouseId).HasName("PK__Warehous__2608AFF9F2C4BF33");
 
             entity.ToTable("WarehouseEntity");
 
@@ -718,7 +558,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<WarehouseItemEntity>(entity =>
         {
-            entity.HasKey(e => new { e.WarehouseId, e.Sku }).HasName("PK__Warehous__7AA952C562AC0228");
+            entity.HasKey(e => new { e.WarehouseId, e.Sku }).HasName("PK__Warehous__7AA952C59E553972");
 
             entity.ToTable("WarehouseItemEntity");
 

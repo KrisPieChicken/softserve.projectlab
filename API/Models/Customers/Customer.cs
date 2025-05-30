@@ -24,8 +24,6 @@ public class Customer
     public string ZipCode { get; set; } = string.Empty;
     
     public DateTime RegistrationDate { get; set; } = DateTime.UtcNow;
-    
-    public LineOfCredit? LineOfCredit { get; set; }
 
     /// <summary>
     /// Gets the full name of the customer.

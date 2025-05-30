@@ -7,8 +7,6 @@ public partial class CustomerEntity
 {
     public int CustomerId { get; set; }
 
-    public string CustomerType { get; set; } = null!;
-
     public string CustomerName { get; set; } = null!;
 
     public string CustomerContactNumber { get; set; } = null!;
@@ -41,15 +39,8 @@ public partial class CustomerEntity
 
     public bool IsDeleted { get; set; }
 
-    public virtual BusinessCustomerEntity? BusinessCustomerEntity { get; set; }
-
     public virtual ICollection<CartEntity> CartEntities { get; set; } = new List<CartEntity>();
-
-    public virtual IndividualCustomerEntity? IndividualCustomerEntity { get; set; }
-
-    public virtual LineOfCreditEntity? LineOfCreditEntity { get; set; }
 
     public virtual ICollection<OrderEntity> OrderEntities { get; set; } = new List<OrderEntity>();
 
-    public virtual PremiumCustomerEntity? PremiumCustomerEntity { get; set; }
 }

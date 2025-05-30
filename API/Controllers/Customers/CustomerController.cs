@@ -60,75 +60,17 @@ namespace API.Controllers
 
         private Customer ConvertToCustomer(CustomerDto dto)
         {
-            return dto.CustomerType.ToLower() switch
+            return new Customer
             {
-                "business" => new BusinessCustomer
-                {
-                    FirstName = dto.FirstName,
-                    LastName = dto.LastName,
-                    BirthDate = dto.BirthDate,
-                    Email = dto.Email,
-                    PhoneNumber = dto.PhoneNumber,
-                    Address = dto.Address,
-                    City = dto.City,
-                    State = dto.State,
-                    ZipCode = dto.ZipCode,
-                    // Propiedades específicas de BusinessCustomer
-                    CompanyName = dto.CompanyName,
-                    TaxId = dto.TaxId,
-                    Industry = dto.Industry,
-                    EmployeeCount = dto.EmployeeCount,
-                    AnnualRevenue = dto.AnnualRevenue,
-                    BusinessSize = dto.BusinessSize,
-                    VolumeDiscountRate = dto.VolumeDiscountRate,
-                    CreditTerms = dto.CreditTerms
-                },
-                "individual" => new IndividualCustomer
-                {
-                    FirstName = dto.FirstName,
-                    LastName = dto.LastName,
-                    BirthDate = dto.BirthDate,
-                    Email = dto.Email,
-                    PhoneNumber = dto.PhoneNumber,
-                    Address = dto.Address,
-                    City = dto.City,
-                    State = dto.State,
-                    ZipCode = dto.ZipCode,
-                    // Propiedades específicas de IndividualCustomer
-                    IsEligibleForPromotions = dto.IsEligibleForPromotions,
-                    CommunicationPreference = dto.CommunicationPreference,
-                    LoyaltyPoints = dto.LoyaltyPoints,
-                    LastPurchaseDate = dto.LastPurchaseDate
-                },
-                "premium" => new PremiumCustomer
-                {
-                    FirstName = dto.FirstName,
-                    LastName = dto.LastName,
-                    BirthDate = dto.BirthDate,
-                    Email = dto.Email,
-                    PhoneNumber = dto.PhoneNumber,
-                    Address = dto.Address,
-                    City = dto.City,
-                    State = dto.State,
-                    ZipCode = dto.ZipCode,
-                    // Propiedades específicas de PremiumCustomer
-                    DiscountRate = dto.DiscountRate,
-                    MembershipStartDate = dto.MembershipStartDate,
-                    MembershipExpiryDate = dto.MembershipExpiryDate,
-                    TierLevel = dto.TierLevel
-                },
-                _ => new Customer
-                {
-                    FirstName = dto.FirstName,
-                    LastName = dto.LastName,
-                    BirthDate = dto.BirthDate,
-                    Email = dto.Email,
-                    PhoneNumber = dto.PhoneNumber,
-                    Address = dto.Address,
-                    City = dto.City,
-                    State = dto.State,
-                    ZipCode = dto.ZipCode
-                }
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                BirthDate = dto.BirthDate,
+                Email = dto.Email,
+                PhoneNumber = dto.PhoneNumber,
+                Address = dto.Address,
+                City = dto.City,
+                State = dto.State,
+                ZipCode = dto.ZipCode
             };
         }
     }
