@@ -1,0 +1,391 @@
+﻿@page "/cart-api-testing"
+@using MudBlazor
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+@using softserve.projectlabs.Shared.DTOs.Cart
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5" Class="mb-4">Cart API Testing</MudText>
+    <MudExpansionPanels>
+
+        <!-- 1. Create Cart for Customer -->
+        <MudExpansionPanel Text="Create Cart for Customer">
+            <MudTextField @bind-Value="createCartCustomerId" Label="Customer ID" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateCart" Class="mt-2">Send Request</MudButton>
+            @if (!string.IsNullOrEmpty(createCartResponse))
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@createCartResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 2. Get Cart By ID -->
+        <MudExpansionPanel Text="Get Cart By ID">
+            <MudTextField @bind-Value="getCartId" Label="Cart ID" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetCartById" Class="mt-2">Send Request</MudButton>
+            @if (cartById != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText><b>Cart ID:</b> @cartById?.Id ?? "N/A"</MudText>
+                    <MudText><b>Customer ID:</b> @cartById?.CustomerId ?? 0</MudText>
+                    @if (cartById?.Items != null && cartById.Items.Any())
+                    {
+                        <MudTable Items="cartById.Items">
+                            <HeaderContent>
+                                <MudTh>SKU</MudTh>
+                                <MudTh>Quantity</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>@context.Sku</MudTd>
+                                <MudTd>@context.Quantity</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                    else
+                    {
+                        <MudText>No items in cart.</MudText>
+                    }
+                </MudPaper>
+            }
+            else if (!string.IsNullOrEmpty(getCartByIdResponse))
+            {
+                <MudText>@getCartByIdResponse</MudText>
+            }
+        </MudExpansionPanel>
+
+        <!-- 3. Get Cart By Customer ID -->
+        <MudExpansionPanel Text="Get Cart By Customer ID">
+            <MudTextField @bind-Value="getCartCustomerId" Label="Customer ID" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetCartByCustomerId" Class="mt-2">Send Request</MudButton>
+            @if (cartByCustomerId != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText><b>Cart ID:</b> @cartByCustomerId?.Id ?? "N/A"</MudText>
+                    <MudText><b>Customer ID:</b> @cartByCustomerId?.CustomerId ?? 0</MudText>
+                    @if (cartByCustomerId?.Items != null && cartByCustomerId.Items.Any())
+                    {
+                        <MudTable Items="cartByCustomerId.Items">
+                            <HeaderContent>
+                                <MudTh>SKU</MudTh>
+                                <MudTh>Quantity</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>@context.Sku</MudTd>
+                                <MudTd>@context.Quantity</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                    else
+                    {
+                        <MudText>No items in cart.</MudText>
+                    }
+                </MudPaper>
+            }
+            else if (!string.IsNullOrEmpty(getCartByCustomerIdResponse))
+            {
+                <MudText>@getCartByCustomerIdResponse</MudText>
+            }
+        </MudExpansionPanel>
+
+        <!-- 4. Add Item To Cart -->
+        <MudExpansionPanel Text="Add Item To Cart">
+            <MudTextField @bind-Value="addItemCartId" Label="Cart ID" Required="true" />
+            <MudTextField @bind-Value="addItemSku" Label="Item SKU" Required="true" />
+            <MudTextField @bind-Value="addItemQuantity" Label="Quantity" Required="true" InputType="InputType.Number" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddItemToCart" Class="mt-2">Send Request</MudButton>
+            @if (!string.IsNullOrEmpty(addItemResponse))
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@addItemResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 5. Remove Item From Cart -->
+        <MudExpansionPanel Text="Remove Item From Cart">
+            <MudTextField @bind-Value="removeItemCartId" Label="Cart ID" Required="true" />
+            <MudTextField @bind-Value="removeItemSku" Label="Item SKU" Required="true" />
+            <MudTextField @bind-Value="removeItemQuantity" Label="Quantity" Required="true" InputType="InputType.Number" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RemoveItemFromCart" Class="mt-2">Send Request</MudButton>
+            @if (!string.IsNullOrEmpty(removeItemResponse))
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@removeItemResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 6. Clear Cart -->
+        <MudExpansionPanel Text="Clear Cart">
+            <MudTextField @bind-Value="clearCartId" Label="Cart ID" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ClearCart" Class="mt-2">Send Request</MudButton>
+            @if (!string.IsNullOrEmpty(clearCartResponse))
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@clearCartResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 7. Delete Cart -->
+        <MudExpansionPanel Text="Delete Cart">
+            <MudTextField @bind-Value="deleteCartId" Label="Cart ID" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="DeleteCart" Class="mt-2">Send Request</MudButton>
+            @if (!string.IsNullOrEmpty(deleteCartResponse))
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@deleteCartResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 8. Get Cart Total -->
+        <MudExpansionPanel Text="Get Cart Total">
+            <MudTextField @bind-Value="cartTotalId" Label="Cart ID" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetCartTotal" Class="mt-2">Send Request</MudButton>
+            @if (!string.IsNullOrEmpty(cartTotalResponse))
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@cartTotalResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+    </MudExpansionPanels>
+</MudPaper>
+
+@code {    
+    // 1. Create Cart for Customer
+    private int createCartCustomerId;
+    private string? createCartResponse;
+    private async Task CreateCart()
+    {
+        try
+        {
+            var response = await Http.PostAsync($"api/carts/customer/{createCartCustomerId}", null);
+            if (response.IsSuccessStatusCode)
+            {
+                createCartResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Cart created successfully!", Severity.Success);
+            }
+            else
+            {
+                createCartResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to create cart: " + createCartResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Error creating cart: " + ex.Message, Severity.Error);
+        }
+    }
+
+    // 2. Get Cart By ID
+    private string getCartId;
+    private CartDto? cartById;
+    private string? getCartByIdResponse;
+    private async Task GetCartById()
+    {
+        cartById = null;
+        getCartByIdResponse = null;
+        try
+        {
+            var response = await Http.GetAsync($"api/carts/{getCartId}");
+            if (response.IsSuccessStatusCode)
+            {
+                cartById = await response.Content.ReadFromJsonAsync<CartDto>();
+                if (cartById == null)
+                {
+                    getCartByIdResponse = "Cart not found or empty.";
+                    Snackbar.Add(getCartByIdResponse, Severity.Info);
+                }
+            }
+            else
+            {
+                getCartByIdResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to retrieve cart: " + getCartByIdResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            getCartByIdResponse = ex.Message;
+            Snackbar.Add("Error retrieving cart: " + ex.Message, Severity.Error);
+        }
+    }
+
+    // 3. Get Cart By Customer ID
+    private int getCartCustomerId;
+    private CartDto? cartByCustomerId;
+    private string? getCartByCustomerIdResponse;
+    private async Task GetCartByCustomerId()
+    {
+        cartByCustomerId = null;
+        getCartByCustomerIdResponse = null;
+        try
+        {
+            var response = await Http.GetAsync($"api/carts/customer/{getCartCustomerId}");
+            if (response.IsSuccessStatusCode)
+            {
+                cartByCustomerId = await response.Content.ReadFromJsonAsync<CartDto>();
+                if (cartByCustomerId == null)
+                {
+                    getCartByCustomerIdResponse = "Cart not found or empty.";
+                    Snackbar.Add(getCartByCustomerIdResponse, Severity.Info);
+                }
+            }
+            else
+            {
+                getCartByCustomerIdResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to retrieve cart: " + getCartByCustomerIdResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            getCartByCustomerIdResponse = ex.Message;
+            Snackbar.Add("Error retrieving cart: " + ex.Message, Severity.Error);
+        }
+    }
+
+    // 4. Add Item To Cart
+    private string addItemCartId;
+    private int addItemSku;
+    private int addItemQuantity;
+    private string? addItemResponse;
+    private async Task AddItemToCart()
+    {
+        addItemResponse = null;
+        try
+        {
+            var response = await Http.PostAsync(
+                $"api/carts/{addItemCartId}/items/{addItemSku}?quantity={addItemQuantity}", null);
+            if (response.IsSuccessStatusCode)
+            {
+                addItemResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Item added to cart successfully!", Severity.Success);
+            }
+            else
+            {
+                addItemResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to add item: " + addItemResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            addItemResponse = "Error adding item to cart: " + ex.Message;
+            Snackbar.Add(addItemResponse, Severity.Error);
+        }
+    }
+
+    // 5. Remove Item From Cart
+    private string removeItemCartId;
+    private int removeItemSku;
+    private int removeItemQuantity;
+    private string? removeItemResponse;
+    private async Task RemoveItemFromCart()
+    {
+        removeItemResponse = null;
+        try
+        {
+            var response = await Http.DeleteAsync(
+                $"api/carts/{removeItemCartId}/items/{removeItemSku}?quantity={removeItemQuantity}");
+            if (response.IsSuccessStatusCode)
+            {
+                removeItemResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Item removed from cart successfully!", Severity.Success);
+            }
+            else
+            {
+                removeItemResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to remove item: " + removeItemResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            removeItemResponse = "Error removing item from cart: " + ex.Message;
+            Snackbar.Add(removeItemResponse, Severity.Error);
+        }
+    }
+
+    // 6. Clear Cart
+    private string clearCartId;
+    private string? clearCartResponse;
+    private async Task ClearCart()
+    {
+        clearCartResponse = null;
+        try
+        {
+            var response = await Http.DeleteAsync($"api/carts/{clearCartId}/clear");
+            if (response.IsSuccessStatusCode)
+            {
+                clearCartResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Cart cleared successfully!", Severity.Success);
+            }
+            else
+            {
+                clearCartResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to clear cart: " + clearCartResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            clearCartResponse = "Error clearing cart: " + ex.Message;
+            Snackbar.Add(clearCartResponse, Severity.Error);
+        }
+    }
+
+    // 7. Delete Cart
+    private string deleteCartId;
+    private string? deleteCartResponse;
+    private async Task DeleteCart()
+    {
+        deleteCartResponse = null;
+        try
+        {
+            var response = await Http.DeleteAsync($"api/carts/{deleteCartId}");
+            if (response.IsSuccessStatusCode)
+            {
+                deleteCartResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Cart deleted successfully!", Severity.Success);
+            }
+            else
+            {
+                deleteCartResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to delete cart: " + deleteCartResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            deleteCartResponse = "Error deleting cart: " + ex.Message;
+            Snackbar.Add(deleteCartResponse, Severity.Error);
+        }
+    }
+
+    // 8. Get Cart Total
+    private string cartTotalId;
+    private string? cartTotalResponse;
+    private async Task GetCartTotal()
+    {
+        cartTotalResponse = null;
+        try
+        {
+            var response = await Http.GetAsync($"api/carts/{cartTotalId}/total");
+            if (response.IsSuccessStatusCode)
+            {
+                cartTotalResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Cart total retrieved successfully!", Severity.Success);
+            }
+            else
+            {
+                cartTotalResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to retrieve cart total: " + cartTotalResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            cartTotalResponse = "Error retrieving cart total: " + ex.Message;
+            Snackbar.Add(cartTotalResponse, Severity.Error);
+        }
+    }
+}

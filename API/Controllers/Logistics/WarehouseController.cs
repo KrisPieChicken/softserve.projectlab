@@ -45,7 +45,9 @@ namespace API.Controllers.Logistics
         [HttpGet("{id}")]
         public async Task<IActionResult> GetWarehouseById(int id)
         {
+            //Here we are calling the service to get the warehouse by id
             var result = await _warehouseService.GetWarehouseByIdAsync(id);
+            //if the result is successful, we return the data, otherwise we return a not found response
             return result.IsSuccess ? Ok(result.Data) : NotFound(result.ErrorMessage);
         }
 

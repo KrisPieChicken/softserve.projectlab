@@ -1,5 +1,7 @@
 using API.Models.IntAdmin.AdminInterfaces;
 using softserve.projectlabs.Shared.Utilities;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace API.Models.IntAdmin;
 
