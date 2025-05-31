@@ -39,7 +39,6 @@ public static class ServiceRegistrationExtensions
         services.AddScoped<PermissionDomain>();
         services.AddScoped<RoleDomain>();
         services.AddScoped<UserDomain>();
-        services.AddScoped<LineOfCreditDomain>();
         services.AddScoped<CartDomain>();
         services.AddScoped<PackageDomain>();
         services.AddScoped<TokenGenerator>();
@@ -57,7 +56,6 @@ public static class ServiceRegistrationExtensions
         services.AddScoped<IPermissionService, PermissionService>();
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IUserService, UserService>();
-        services.AddScoped<ILineOfCreditService, LineOfCreditService>();
         services.AddScoped<ICartService, CartService>();
         services.AddScoped<IPackageService, PackageService>();
         services.AddScoped<IAuthService, AuthService>();

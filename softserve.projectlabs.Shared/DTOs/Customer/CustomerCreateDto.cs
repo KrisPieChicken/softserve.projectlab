@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace API.Data.Entities;
-
-public partial class CustomerEntity : BaseEntity
+namespace softserve.projectlabs.Shared.DTOs.Customer;
+public class CustomerCreateDto
 {
-    public int CustomerId { get; set; }
     public string CustomerFirstName { get; set; } = null!;
     public string CustomerLastName { get; set; } = null!;
     public string CustomerContactNumber { get; set; } = null!;
@@ -15,6 +16,4 @@ public partial class CustomerEntity : BaseEntity
     public string City { get; set; } = null!;
     public string State { get; set; } = null!;
     public string ZipCode { get; set; } = null!;
-    public virtual ICollection<CartEntity> CartEntities { get; set; } = new List<CartEntity>();
-    public virtual ICollection<OrderEntity> OrderEntities { get; set; } = new List<OrderEntity>();
 }

@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace softserve.projectlabs.Shared.DTOs.Cart;
+namespace softserve.projectlabs.Shared.DTOs.Package;
 
-public class CartItemDto
+public class PackageItemDto
 {
-    public string CartId { get; set; } = string.Empty;
+    public string PackageId { get; set; } = string.Empty;
     public int ItemSku { get; set; }
     public int Quantity { get; set; }
-}
 }
