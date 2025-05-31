@@ -45,7 +45,7 @@ namespace API.Implementations.Domain
 
                 // Asignar el ID generado al modelo
                 package.Id = packageEntity.PackageId.ToString();
-                package.Customer = new Customer { Id = customerId.ToString() };
+                package.Customer = new Customer { CustomerId = customerId };
 
                 // Si hay elementos en el paquete, agregarlos
                 if (package.Items != null && package.Items.Any())

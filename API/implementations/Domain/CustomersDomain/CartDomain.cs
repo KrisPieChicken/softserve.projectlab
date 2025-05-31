@@ -56,7 +56,7 @@ namespace API.Implementations.Domain
                 var cart = new Cart
                 {
                     Id = cartEntity.CartId.ToString(),
-                    Customer = new Customer { Id = customerId.ToString() },
+                    Customer = new Customer { CustomerId = customerId },
                     Items = new List<CartItem>(),
                     CreatedAt = cartEntity.CreatedAt,
                     UpdatedAt = cartEntity.UpdatedAt
@@ -352,11 +352,11 @@ namespace API.Implementations.Domain
                 Id = entity.CartId.ToString(),
                 Customer = new Customer
                 {
-                    Id = entity.CustomerId.ToString(),
-                    FirstName = entity.Customer.FirstName ?? string.Empty,
-                    LastName = entity.Customer.LastName ?? string.Empty,
-                    Email = entity.Customer.Email ?? string.Empty,
-                    PhoneNumber = entity.Customer.PhoneNumber ?? string.Empty
+                    CustomerId = entity.CustomerId,
+                    CustomerFirstName = entity.Customer.CustomerFirstName ?? string.Empty,
+                    CustomerLastName = entity.Customer.CustomerLastName ?? string.Empty,
+                    CustomerContactEmail = entity.Customer.CustomerContactEmail ?? string.Empty,
+                    CustomerContactNumber = entity.Customer.CustomerContactNumber ?? string.Empty
                 },
                 CreatedAt = entity.CreatedAt,
                 UpdatedAt = entity.UpdatedAt,

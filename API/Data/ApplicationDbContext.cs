@@ -61,11 +61,16 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<WarehouseItemEntity> WarehouseItemEntities { get; set; }
 
+    /*
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Server=DESKTOP-GH8PPU1;Database=RanAwayDB;Integrated Security=True;TrustServerCertificate=True;");
+    */
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<BranchEntity>(entity =>
         {
-            entity.HasKey(e => e.BranchId).HasName("PK__BranchEn__A1682FC5784BD340");
+            entity.HasKey(e => e.BranchId).HasName("PK__BranchEn__A1682FC5CCCD0D1D");
 
             entity.ToTable("BranchEntity");
 
@@ -97,7 +102,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<CartEntity>(entity =>
         {
-            entity.HasKey(e => e.CartId).HasName("PK__CartEnti__51BCD7B79057F860");
+            entity.HasKey(e => e.CartId).HasName("PK__CartEnti__51BCD7B7485CD17F");
 
             entity.ToTable("CartEntity");
 
@@ -116,7 +121,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<CartItemEntity>(entity =>
         {
-            entity.HasKey(e => new { e.CartId, e.Sku }).HasName("PK__CartItem__0D1D2A8B0C73A29D");
+            entity.HasKey(e => new { e.CartId, e.Sku }).HasName("PK__CartItem__0D1D2A8B300FE4DB");
 
             entity.ToTable("CartItemEntity");
 
@@ -133,7 +138,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<CatalogCategoryEntity>(entity =>
         {
-            entity.HasKey(e => new { e.CatalogId, e.CategoryId }).HasName("PK__CatalogC__63C1A8C888BF6384");
+            entity.HasKey(e => new { e.CatalogId, e.CategoryId }).HasName("PK__CatalogC__63C1A8C803D2B97B");
 
             entity.ToTable("CatalogCategoryEntity");
 
@@ -154,7 +159,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<CatalogEntity>(entity =>
         {
-            entity.HasKey(e => e.CatalogId).HasName("PK__CatalogE__C2513B68E017C975");
+            entity.HasKey(e => e.CatalogId).HasName("PK__CatalogE__C2513B68358ACFA2");
 
             entity.ToTable("CatalogEntity");
 
@@ -172,7 +177,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<CategoryEntity>(entity =>
         {
-            entity.HasKey(e => e.CategoryId).HasName("PK__Category__19093A0B125F492B");
+            entity.HasKey(e => e.CategoryId).HasName("PK__Category__19093A0B0D717C89");
 
             entity.ToTable("CategoryEntity");
 
@@ -189,7 +194,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<CustomerEntity>(entity =>
         {
-            entity.HasKey(e => e.CustomerId).HasName("PK__Customer__A4AE64D8B0F831E9");
+            entity.HasKey(e => e.CustomerId).HasName("PK__Customer__A4AE64D89D674FAC");
 
             entity.ToTable("CustomerEntity");
 
@@ -208,22 +213,12 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.CustomerContactNumber)
                 .HasMaxLength(255)
                 .IsUnicode(false);
-            entity.Property(e => e.CustomerName)
-                .HasMaxLength(255)
-                .IsUnicode(false);
-            entity.Property(e => e.Email)
-                .HasMaxLength(150)
-                .IsUnicode(false);
-            entity.Property(e => e.FirstName)
+            entity.Property(e => e.CustomerFirstName)
                 .HasMaxLength(100)
                 .IsUnicode(false);
-            entity.Property(e => e.LastName)
+            entity.Property(e => e.CustomerLastName)
                 .HasMaxLength(100)
                 .IsUnicode(false);
-            entity.Property(e => e.PhoneNumber)
-                .HasMaxLength(20)
-                .IsUnicode(false);
-            entity.Property(e => e.RegistrationDate).HasColumnType("datetime");
             entity.Property(e => e.State)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -237,7 +232,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<ItemEntity>(entity =>
         {
-            entity.HasKey(e => e.Sku).HasName("PK__ItemEnti__CA1FD3C42E172173");
+            entity.HasKey(e => e.Sku).HasName("PK__ItemEnti__CA1FD3C484EE8725");
 
             entity.ToTable("ItemEntity");
 
@@ -271,7 +266,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<OrderEntity>(entity =>
         {
-            entity.HasKey(e => e.OrderId).HasName("PK__OrderEnt__C3905BCFC5A9EEC9");
+            entity.HasKey(e => e.OrderId).HasName("PK__OrderEnt__C3905BCF485EB924");
 
             entity.ToTable("OrderEntity");
 
@@ -295,7 +290,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<OrderItemEntity>(entity =>
         {
-            entity.HasKey(e => new { e.OrderId, e.Sku }).HasName("PK__OrderIte__9F31A6F3405C047F");
+            entity.HasKey(e => new { e.OrderId, e.Sku }).HasName("PK__OrderIte__9F31A6F3EA8B0110");
 
             entity.ToTable("OrderItemEntity");
 
@@ -312,7 +307,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<PackageEntity>(entity =>
         {
-            entity.HasKey(e => e.PackageId).HasName("PK__PackageE__322035CC4D477BD2");
+            entity.HasKey(e => e.PackageId).HasName("PK__PackageE__322035CC08A50029");
 
             entity.ToTable("PackageEntity");
 
@@ -329,7 +324,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<PackageItemEntity>(entity =>
         {
-            entity.HasKey(e => new { e.PackageId, e.Sku }).HasName("PK__PackageI__6E81C8F0B536A403");
+            entity.HasKey(e => new { e.PackageId, e.Sku }).HasName("PK__PackageI__6E81C8F08B50B3CD");
 
             entity.ToTable("PackageItemEntity");
 
@@ -346,7 +341,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<PackageNoteEntity>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PackageN__3214EC07323F733C");
+            entity.HasKey(e => e.Id).HasName("PK__PackageN__3214EC07DD892105");
 
             entity.ToTable("PackageNoteEntity");
 
@@ -375,7 +370,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<PermissionEntity>(entity =>
         {
-            entity.HasKey(e => e.PermissionId).HasName("PK__Permissi__EFA6FB2FD1F87F46");
+            entity.HasKey(e => e.PermissionId).HasName("PK__Permissi__EFA6FB2FD0BACA84");
 
             entity.ToTable("PermissionEntity");
 
@@ -393,7 +388,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<RoleEntity>(entity =>
         {
-            entity.HasKey(e => e.RoleId).HasName("PK__RoleEnti__8AFACE1AD35F2039");
+            entity.HasKey(e => e.RoleId).HasName("PK__RoleEnti__8AFACE1AAACCDD25");
 
             entity.ToTable("RoleEntity");
 
@@ -411,7 +406,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<RolePermissionEntity>(entity =>
         {
-            entity.HasKey(e => new { e.RoleId, e.PermissionId }).HasName("PK__RolePerm__6400A1A8EC670C6E");
+            entity.HasKey(e => new { e.RoleId, e.PermissionId }).HasName("PK__RolePerm__6400A1A84691FE5A");
 
             entity.ToTable("RolePermissionEntity");
 
@@ -435,7 +430,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<SupplierEntity>(entity =>
         {
-            entity.HasKey(e => e.SupplierId).HasName("PK__Supplier__4BE666B46B621C6A");
+            entity.HasKey(e => e.SupplierId).HasName("PK__Supplier__4BE666B4B773B05C");
 
             entity.ToTable("SupplierEntity");
 
@@ -459,7 +454,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<SupplierItemEntity>(entity =>
         {
-            entity.HasKey(e => new { e.SupplierId, e.Sku }).HasName("PK__Supplier__17479B88EBC0F204");
+            entity.HasKey(e => new { e.SupplierId, e.Sku }).HasName("PK__Supplier__17479B888FA110BF");
 
             entity.ToTable("SupplierItemEntity");
 
@@ -480,7 +475,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<UserEntity>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__UserEnti__1788CC4C3732C7DB");
+            entity.HasKey(e => e.UserId).HasName("PK__UserEnti__1788CC4CE64704DB");
 
             entity.ToTable("UserEntity");
 
@@ -515,7 +510,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<UserRoleEntity>(entity =>
         {
-            entity.HasKey(e => new { e.UserId, e.RoleId }).HasName("PK__UserRole__AF2760AD23853F31");
+            entity.HasKey(e => new { e.UserId, e.RoleId }).HasName("PK__UserRole__AF2760ADC2EA7126");
 
             entity.ToTable("UserRoleEntity");
 
@@ -536,7 +531,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<WarehouseEntity>(entity =>
         {
-            entity.HasKey(e => e.WarehouseId).HasName("PK__Warehous__2608AFF9F2C4BF33");
+            entity.HasKey(e => e.WarehouseId).HasName("PK__Warehous__2608AFF918D7A0C4");
 
             entity.ToTable("WarehouseEntity");
 
@@ -558,7 +553,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<WarehouseItemEntity>(entity =>
         {
-            entity.HasKey(e => new { e.WarehouseId, e.Sku }).HasName("PK__Warehous__7AA952C59E553972");
+            entity.HasKey(e => new { e.WarehouseId, e.Sku }).HasName("PK__Warehous__7AA952C54E329386");
 
             entity.ToTable("WarehouseItemEntity");
 
