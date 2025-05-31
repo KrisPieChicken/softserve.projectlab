@@ -74,7 +74,6 @@ public class UserDomain
 
             await _userRepo.UpdateAsync(entity);
 
-            // Actualizar roles
             var existing = await _userRepo.GetUserRolesAsync(id);
             var existingIds = existing.Select(ur => ur.RoleId).ToHashSet();
             var incomingIds = model.Roles.Select(r => r.RoleId).ToHashSet();

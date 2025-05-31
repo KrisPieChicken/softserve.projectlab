@@ -16,7 +16,7 @@ public class CatalogRepository
     public Task<List<CatalogCategoryEntity>> GetCatalogCategoriesAsync(
         int catalogId, int skip = 0, int take = 50)
     {
-        return _ctx.CatalogCategoryEntities       // <— aquí _ctx, no _context
+        return _ctx.CatalogCategoryEntities
             .AsNoTracking()
             .Where(cc => cc.CatalogId == catalogId)
             .Skip(skip)

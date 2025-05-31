@@ -6,21 +6,28 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using softserve.projectlabs.Shared.Utilities;
 using softserve.projectlabs.Shared.Interfaces;
+using softserve.projectlabs.Shared.DTOs.Category;
+using softserve.projectlabs.Shared.DTOs.Customer;
+using AutoMapper;
+using softserve.projectlabs.Shared.DTOs.Catalog;
 
 namespace API.Services
 {
     public class CustomerService : ICustomerService
     {
         private readonly CustomerDomain _customerDomain;
+        private readonly IMapper _mapper;
 
-        public CustomerService(CustomerDomain customerDomain)
+        public CustomerService(CustomerDomain customerDomain, IMapper mapper)
         {
             _customerDomain = customerDomain;
+            _mapper = mapper;
         }
 
-        public async Task<Result<Customer>> AddCustomerAsync(Customer customer)
+        public async Task<Result<Customer>> AddCustomerAsync(CustomerCreateDto customerDto)
         {
-            return await _customerDomain.CreateCustomerAsync(customer);
+            var domainModel = _mapper.Map<Customer>(customerDto);
+            return await _customerDomain.CreateCustomerAsync(domainModel);
         }
 
         public async Task<Result<Customer>> GetCustomerByIdAsync(int customerId)
