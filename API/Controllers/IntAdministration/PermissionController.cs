@@ -25,41 +25,31 @@ namespace API.Controllers.IntAdmin
         /// <summary>
         /// Adds a new permission.
         /// </summary>
-        /// <param name=permissionDto">Permission object to add</param>
+        /// <param name="permissionDto">Permission object to add</param>
         /// <returns>HTTP response with the created permission or error message</returns>
         [HttpPost]
         public async Task<IActionResult> CreatePermission([FromBody] PermissionDto permissionDto)
         {
             var result = await _permissionService.CreatePermissionAsync(permissionDto);
-            if (!result.IsSuccess)
-            {
-                return BadRequest(result.ErrorMessage);
-            }
-                
-
-            // RESTful: 201 Created con location al recurso nuevo
-            return CreatedAtAction(nameof(GetPermissionById),
-                new { permissionId = result.Data.PermissionId },
-                result.Data);
+            return result.IsSuccess 
+                ? Ok(result.Data) 
+                : BadRequest(result.ErrorMessage);
         }
 
         /// <summary>
         /// Updates an existing permission.
         /// </summary>
-        /// <param name="permissionDto">Permission object with updated data</param>
+        /// <param name="permissionId">The ID of the permission to update.</param>
+        /// <param name="permissionDto">The updated permission data.</param>
         /// <returns>HTTP response with the updated permission or error message</returns>
         [HttpPut("{PermissionId}")]
         public async Task<IActionResult> UpdatePermission(int permissionId, [FromBody] PermissionDto permissionDto)
         {
             permissionDto.PermissionId = permissionId;
             var result = await _permissionService.UpdatePermissionAsync(permissionDto);
-            if (!result.IsSuccess)
-            {
-                return NotFound(result.ErrorMessage);
-            }
-                
-
-            return Ok(result.Data);
+            return result.IsSuccess
+                ? Ok(result.Data)
+                : BadRequest(result.ErrorMessage);
         }
 
         /// <summary>
@@ -71,13 +61,9 @@ namespace API.Controllers.IntAdmin
         public async Task<IActionResult> GetPermissionById(int permissionId)
         {
             var result = await _permissionService.GetPermissionByIdAsync(permissionId);
-            if (!result.IsSuccess)
-            {
-                return NotFound(result.ErrorMessage);
-            }
-                
-
-            return Ok(result.Data);
+            return result.IsSuccess
+                ? Ok(result.Data)
+                : BadRequest(result.ErrorMessage);
         }
 
         /// <summary>
@@ -88,12 +74,9 @@ namespace API.Controllers.IntAdmin
         public async Task<IActionResult> GetAllPermissions()
         {
             var result = await _permissionService.GetAllPermissionsAsync();
-            if (!result.IsSuccess)
-            {  
-                return BadRequest(result.ErrorMessage); 
-            }
-
-            return Ok(result.Data);
+            return result.IsSuccess
+                ? Ok(result.Data)
+                : BadRequest(result.ErrorMessage);
         }
 
         /// <summary>
@@ -105,12 +88,9 @@ namespace API.Controllers.IntAdmin
         public async Task<IActionResult> DeletePermission(int permissionId)
         {
             var result = await _permissionService.DeletePermissionAsync(permissionId);
-            if (!result.IsSuccess)
-            {
-                return NotFound(result.ErrorMessage);
-            }
-
-            return NoContent();
+            return result.IsSuccess
+                ? NoContent()
+                : NotFound(result.ErrorMessage);
         }
     }
 }

@@ -1,7 +1,12 @@
-﻿using API.Data.Repositories.BaseRepository;
-using API.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using API.Data;
 using API.Data.Entities;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace API.Data.Repositories.BaseRepository;
 
 public class SoftRepository<T> : ISoftRepository<T> where T : BaseEntity
 {

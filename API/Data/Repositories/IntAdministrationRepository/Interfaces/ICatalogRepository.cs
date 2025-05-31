@@ -1,7 +1,9 @@
 ﻿using API.Data.Entities;
-using API.Data.Repositories.BaseRepository;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using API.Data.Repositories.BaseRepository;
+
+namespace API.Data.Repositories.IntAdministrationRepository.Interfaces;
 
 public interface ICatalogRepository : ISoftRepository<CatalogEntity>
 {

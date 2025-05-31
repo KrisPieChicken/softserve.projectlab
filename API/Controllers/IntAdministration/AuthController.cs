@@ -5,20 +5,29 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers.IntAdmin;
 
+/// <summary>
+/// API Controller for managing authentication operations.
+/// </summary>
 [ApiController]
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
 
+    /// <summary>
+    /// Constructor with dependency injection for IAuthService.
+    /// </summary>
+    /// <param name="authService">The authentication service instance</param>
     public AuthController(IAuthService authService)
     {
         _authService = authService;
     }
 
     /// <summary>
-    /// Obtains a new access token by using the credentials of the user.
+    /// Authenticates a user and issues an access token.
     /// </summary>
+    /// <param name="dto">Login credentials containing email and password</param>
+    /// <returns>HTTP response with authentication token or error message</returns>
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] UserLoginDto dto)
@@ -29,13 +38,17 @@ public class AuthController : ControllerBase
             : Unauthorized(res.ErrorMessage);
     }
 
+    /// <summary>
+    /// Logs out the currently authenticated user.
+    /// </summary>
+    /// <returns>HTTP response indicating success or failure</returns>
     [HttpPost("logout")]
     [Authorize]
     public async Task<IActionResult> Logout()
     {
         var res = await _authService.LogoutAsync();
-        return res.IsSuccess 
-            ? NoContent() 
+        return res.IsSuccess
+            ? NoContent()
             : BadRequest(res.ErrorMessage);
     }
 }

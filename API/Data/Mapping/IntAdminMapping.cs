@@ -44,7 +44,8 @@ namespace API.Mappings
             // =========================
             // Category | DTO ↔ Domain
             // =========================
-            CreateMap<CategoryDto, Category>().ReverseMap();
+            CreateMap<CategoryDto, Category>()
+                .ReverseMap();
 
             // =========================
             // Create ↔ Domain
