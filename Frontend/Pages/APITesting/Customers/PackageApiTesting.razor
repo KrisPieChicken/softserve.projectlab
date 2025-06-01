@@ -1,5 +1,629 @@
-﻿<h3>PackageApiTesting</h3>
+﻿@page "/package-api-testing"
+@using MudBlazor
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+@using softserve.projectlabs.Shared.DTOs.Package
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5" Class="mb-4">Package API Testing</MudText>
+    <MudExpansionPanels>
+
+        <!-- 1. Create Package for Customer -->
+        <MudExpansionPanel Text="Create Package for Customer">
+            <MudTextField @bind-Value="createCustomerId" Label="Customer ID" Required="true" InputType="InputType.Number" />
+            <MudTextField @bind-Value="createPackage.Name" Label="Package Name" Required="true" />
+            <MudTextField @bind-Value="createPackage.Description" Label="Description" />
+            <MudTextField @bind-Value="createPackage.Status" Label="Status" />
+            <MudTextField @bind-Value="createPackage.SaleDateString" Label="Sale Date (yyyy-MM-dd)" />
+            <MudTextField @bind-Value="createPackage.ContractId" Label="Contract Id" />
+            <MudTextField @bind-Value="createPackage.ContractTermMonthsString" Label="Contract Term (Months)" InputType="InputType.Number" />
+            <MudTextField @bind-Value="createPackage.ContractStartDateString" Label="Contract Start Date (yyyy-MM-dd)" />
+            <MudTextField @bind-Value="createPackage.ContractEndDateString" Label="Contract End Date (yyyy-MM-dd)" />
+            <MudTextField @bind-Value="createPackage.MonthlyFeeString" Label="Monthly Fee" InputType="InputType.Number" />
+            <MudTextField @bind-Value="createPackage.SetupFeeString" Label="Setup Fee" InputType="InputType.Number" />
+            <MudTextField @bind-Value="createPackage.DiscountAmountString" Label="Discount Amount" InputType="InputType.Number" />
+            <MudTextField @bind-Value="createPackage.PaymentMethod" Label="Payment Method" />
+            <MudTextField @bind-Value="createPackage.ShippingAddress" Label="Shipping Address" />
+            <MudTextField @bind-Value="createPackage.TrackingNumber" Label="Tracking Number" />
+            <MudTextField @bind-Value="createPackage.EstimatedDeliveryDateString" Label="Estimated Delivery Date (yyyy-MM-dd)" />
+            <MudTextField @bind-Value="createPackage.ActualDeliveryDateString" Label="Actual Delivery Date (yyyy-MM-dd)" />
+            <MudCheckBox T="bool" @bind-Checked="createPackage.IsRenewal" Label="Is Renewal" />
+            <MudTextField @bind-Value="createPackage.PreviousPackageId" Label="Previous Package Id" />
+            <MudDivider Class="my-2" />
+            <MudText Typo="Typo.subtitle2">Add Items</MudText>
+            <MudTextField @bind-Value="newItemSku" Label="Item SKU" InputType="InputType.Number" />
+            <MudTextField @bind-Value="newItemQuantity" Label="Quantity" InputType="InputType.Number" />
+            <MudButton OnClick="AddItemToNewPackage" Variant="Variant.Outlined" Color="Color.Secondary" Class="ml-2">Add Item</MudButton>
+            <MudCheckBox T="bool" @bind-Checked="createPackage.IsRenewal" Label="Is Renewal" />
+
+            <MudList T="PackageItemDto">
+                @foreach (var item in createPackage.Items)
+                {
+                    <MudListItem T="PackageItemDto" Value="item">
+                        @item.ItemSku x @item.Quantity
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => RemoveItemFromNewPackage(item))" />
+                    </MudListItem>
+                }
+            </MudList>
+
+
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreatePackage" Class="mt-2">Send Request</MudButton>
+            @if (!string.IsNullOrEmpty(createPackageResponse))
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@createPackageResponse</MudText>
+                </MudPaper>
+            }
+            @if (createdPackage != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText><b>ID:</b> @createdPackage.Id</MudText>
+                    <MudText><b>Name:</b> @createdPackage.Name</MudText>
+                    <MudText><b>Status:</b> @createdPackage.Status</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 2. Get Package By ID -->
+        <MudExpansionPanel Text="Get Package By ID">
+            <MudTextField @bind-Value="getPackageId" Label="Package ID" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetPackageById" Class="mt-2">Send Request</MudButton>
+            @if (packageById != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText><b>ID:</b> @packageById.Id</MudText>
+                    <MudText><b>Name:</b> @packageById.Name</MudText>
+                    <MudText><b>Status:</b> @packageById.Status</MudText>
+                </MudPaper>
+            }
+            else if (!string.IsNullOrEmpty(getPackageByIdResponse))
+            {
+                <MudText>@getPackageByIdResponse</MudText>
+            }
+        </MudExpansionPanel>
+
+        <!-- 3. Get Packages By Customer ID -->
+        <MudExpansionPanel Text="Get Packages By Customer ID">
+            <MudTextField @bind-Value="getPackagesCustomerId" Label="Customer ID" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetPackagesByCustomerId" Class="mt-2">Send Request</MudButton>
+            @if (packagesByCustomer != null)
+            {
+                <MudTable Items="packagesByCustomer">
+                    <HeaderContent>
+                        <MudTh>ID</MudTh>
+                        <MudTh>Name</MudTh>
+                        <MudTh>Status</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.Id</MudTd>
+                        <MudTd>@context.Name</MudTd>
+                        <MudTd>@context.Status</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+            else if (!string.IsNullOrEmpty(getPackagesByCustomerResponse))
+            {
+                <MudText>@getPackagesByCustomerResponse</MudText>
+            }
+        </MudExpansionPanel>
+
+        <!-- 4. Delete Package -->
+        <MudExpansionPanel Text="Delete Package">
+            <MudTextField @bind-Value="deletePackageId" Label="Package ID" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="DeletePackage" Class="mt-2">Send Request</MudButton>
+            @if (!string.IsNullOrEmpty(deletePackageResponse))
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@deletePackageResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 5. Add Item To Package -->
+        <MudExpansionPanel Text="Add Item To Package">
+            <MudTextField @bind-Value="addItemPackageId" Label="Package ID" Required="true" />
+            <MudTextField @bind-Value="addItemSku" Label="Item SKU" Required="true" />
+            <MudTextField @bind-Value="addItemQuantity" Label="Quantity" Required="true" InputType="InputType.Number" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddItemToPackage" Class="mt-2">Send Request</MudButton>
+            @if (!string.IsNullOrEmpty(addItemResponse))
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@addItemResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 6. Remove Item From Package -->
+        <MudExpansionPanel Text="Remove Item From Package">
+            <MudTextField @bind-Value="removeItemPackageId" Label="Package ID" Required="true" />
+            <MudTextField @bind-Value="removeItemSku" Label="Item SKU" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RemoveItemFromPackage" Class="mt-2">Send Request</MudButton>
+            @if (!string.IsNullOrEmpty(removeItemResponse))
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@removeItemResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 7. Add Note To Package -->
+        <MudExpansionPanel Text="Add Note To Package">
+            <MudTextField @bind-Value="addNotePackageId" Label="Package ID" Required="true" />
+            <MudTextField @bind-Value="noteTitle" Label="Note Title" Required="true" />
+            <MudTextField @bind-Value="noteContent" Label="Note Content" Required="true" />
+            <MudTextField @bind-Value="noteCreatedBy" Label="Created By" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddNoteToPackage" Class="mt-2">Send Request</MudButton>
+            @if (!string.IsNullOrEmpty(addNoteResponse))
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@addNoteResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 8. Update Package Status -->
+        <MudExpansionPanel Text="Update Package Status">
+            <MudTextField @bind-Value="updateStatusPackageId" Label="Package ID" Required="true" />
+            <MudTextField @bind-Value="updateStatus" Label="Status" Required="true" />
+            <MudTextField @bind-Value="updateStatusUpdatedBy" Label="Updated By" Required="true" />
+            <MudTextField @bind-Value="updateStatusNotes" Label="Notes" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UpdatePackageStatus" Class="mt-2">Send Request</MudButton>
+            @if (!string.IsNullOrEmpty(updateStatusResponse))
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@updateStatusResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 9. Pricing & Contract Info -->
+        <MudExpansionPanel Text="Get Pricing & Contract Info">
+            <MudTextField @bind-Value="pricingPackageId" Label="Package ID" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetTotalPrice" Class="mt-2">Get Total Price</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetDiscountedPrice" Class="mt-2">Get Discounted Price</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetTotalContractValue" Class="mt-2">Get Contract Value</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetContractStatus" Class="mt-2">Is Contract Active?</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetRemainingContractTime" Class="mt-2">Get Remaining Contract Time</MudButton>
+            @if (!string.IsNullOrEmpty(pricingResponse))
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@pricingResponse</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+    </MudExpansionPanels>
+</MudPaper>
 
 @code {
+    // Helper DTO for form input (with string fields for dates/numbers)
+    public class PackageDtoForm
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string SaleDateString { get; set; } = string.Empty;
+        public string ContractId { get; set; } = string.Empty;
+        public string ContractTermMonthsString { get; set; } = "12";
+        public string ContractStartDateString { get; set; } = string.Empty;
+        public string ContractEndDateString { get; set; } = string.Empty;
+        public string MonthlyFeeString { get; set; } = "0";
+        public string SetupFeeString { get; set; } = "0";
+        public string DiscountAmountString { get; set; } = "0";
+        public string PaymentMethod { get; set; } = string.Empty;
+        public string ShippingAddress { get; set; } = string.Empty;
+        public string TrackingNumber { get; set; } = string.Empty;
+        public string EstimatedDeliveryDateString { get; set; } = string.Empty;
+        public string ActualDeliveryDateString { get; set; } = string.Empty;
+        public bool IsRenewal { get; set; }
+        public string PreviousPackageId { get; set; } = string.Empty;
+        public List<PackageItemDto> Items { get; set; } = new();
+    }
 
+    private int createCustomerId;
+    private PackageDtoForm createPackage = new();
+    private string? createPackageResponse;
+    private PackageDto? createdPackage;
+
+    // For adding items
+    private int newItemSku;
+    private int newItemQuantity = 1;
+    private void AddItemToNewPackage()
+    {
+        if (newItemSku > 0 && newItemQuantity > 0)
+            createPackage.Items.Add(new PackageItemDto { ItemSku = newItemSku, Quantity = newItemQuantity });
+    }
+    private void RemoveItemFromNewPackage(PackageItemDto item)
+    {
+        createPackage.Items.Remove(item);
+    }
+
+    private async Task CreatePackage()
+    {
+        createPackageResponse = null;
+        createdPackage = null;
+        try
+        {
+            var payload = new
+            {
+                package = new
+                {
+                    Name = createPackage.Name,
+                    Description = createPackage.Description,
+                    Status = createPackage.Status,
+                    SaleDate = DateTime.TryParse(createPackage.SaleDateString, out var saleDate) ? saleDate : DateTime.UtcNow,
+                    Items = createPackage.Items,
+                    ContractId = string.IsNullOrWhiteSpace(createPackage.ContractId) ? null : createPackage.ContractId,
+                    ContractTermMonths = int.TryParse(createPackage.ContractTermMonthsString, out var ctm) ? ctm : 12,
+                    ContractStartDate = DateTime.TryParse(createPackage.ContractStartDateString, out var csd) ? csd : DateTime.UtcNow,
+                    ContractEndDate = DateTime.TryParse(createPackage.ContractEndDateString, out var ced) ? ced : DateTime.UtcNow.AddMonths(12),
+                    MonthlyFee = decimal.TryParse(createPackage.MonthlyFeeString, out var mf) ? mf : 0,
+                    SetupFee = decimal.TryParse(createPackage.SetupFeeString, out var sf) ? sf : 0,
+                    DiscountAmount = decimal.TryParse(createPackage.DiscountAmountString, out var da) ? da : 0,
+                    PaymentMethod = createPackage.PaymentMethod,
+                    ShippingAddress = createPackage.ShippingAddress,
+                    TrackingNumber = string.IsNullOrWhiteSpace(createPackage.TrackingNumber) ? null : createPackage.TrackingNumber,
+                    EstimatedDeliveryDate = DateTime.TryParse(createPackage.EstimatedDeliveryDateString, out var edd) ? edd : (DateTime?)null,
+                    ActualDeliveryDate = DateTime.TryParse(createPackage.ActualDeliveryDateString, out var add) ? add : (DateTime?)null,
+                    IsRenewal = createPackage.IsRenewal,
+                    PreviousPackageId = string.IsNullOrWhiteSpace(createPackage.PreviousPackageId) ? null : createPackage.PreviousPackageId
+                }
+            };
+            var response = await Http.PostAsJsonAsync($"api/packages/customer/{createCustomerId}", payload);
+
+            if (response.IsSuccessStatusCode)
+            {
+                createdPackage = await response.Content.ReadFromJsonAsync<PackageDto>();
+                createPackageResponse = "Package created successfully.";
+                Snackbar.Add(createPackageResponse, Severity.Success);
+            }
+            else
+            {
+                createPackageResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to create package: " + createPackageResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            createPackageResponse = "Error: " + ex.Message;
+            Snackbar.Add(createPackageResponse, Severity.Error);
+        }
+    }
+
+    // 2. Get Package By ID
+    private string getPackageId;
+    private PackageDto? packageById;
+    private string? getPackageByIdResponse;
+    private async Task GetPackageById()
+    {
+        packageById = null;
+        getPackageByIdResponse = null;
+        try
+        {
+            var response = await Http.GetAsync($"api/packages/{getPackageId}");
+            if (response.IsSuccessStatusCode)
+            {
+                packageById = await response.Content.ReadFromJsonAsync<PackageDto>();
+            }
+            else
+            {
+                getPackageByIdResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to retrieve package: " + getPackageByIdResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            getPackageByIdResponse = ex.Message;
+            Snackbar.Add("Error retrieving package: " + ex.Message, Severity.Error);
+        }
+    }
+
+    // 3. Get Packages By Customer ID
+    private int getPackagesCustomerId;
+    private List<PackageDto>? packagesByCustomer;
+    private string? getPackagesByCustomerResponse;
+    private async Task GetPackagesByCustomerId()
+    {
+        packagesByCustomer = null;
+        getPackagesByCustomerResponse = null;
+        try
+        {
+            var response = await Http.GetAsync($"api/packages/customer/{getPackagesCustomerId}");
+            if (response.IsSuccessStatusCode)
+            {
+                packagesByCustomer = await response.Content.ReadFromJsonAsync<List<PackageDto>>();
+            }
+            else
+            {
+                getPackagesByCustomerResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to retrieve packages: " + getPackagesByCustomerResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            getPackagesByCustomerResponse = ex.Message;
+            Snackbar.Add("Error retrieving packages: " + ex.Message, Severity.Error);
+        }
+    }
+
+    // 4. Delete Package
+    private string deletePackageId;
+    private string? deletePackageResponse;
+    private async Task DeletePackage()
+    {
+        deletePackageResponse = null;
+        try
+        {
+            var response = await Http.DeleteAsync($"api/packages/{deletePackageId}");
+            if (response.IsSuccessStatusCode)
+            {
+                deletePackageResponse = "Package deleted successfully.";
+                Snackbar.Add(deletePackageResponse, Severity.Success);
+            }
+            else
+            {
+                deletePackageResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to delete package: " + deletePackageResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            deletePackageResponse = "Error: " + ex.Message;
+            Snackbar.Add(deletePackageResponse, Severity.Error);
+        }
+    }
+
+    // 5. Add Item To Package
+    private string addItemPackageId;
+    private int addItemSku;
+    private int addItemQuantity = 1;
+    private string? addItemResponse;
+    private async Task AddItemToPackage()
+    {
+        addItemResponse = null;
+        try
+        {
+            var response = await Http.PostAsync(
+                $"api/packages/{addItemPackageId}/items/{addItemSku}?quantity={addItemQuantity}", null);
+            if (response.IsSuccessStatusCode)
+            {
+                addItemResponse = "Item added to package successfully.";
+                Snackbar.Add(addItemResponse, Severity.Success);
+            }
+            else
+            {
+                addItemResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to add item: " + addItemResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            addItemResponse = "Error: " + ex.Message;
+            Snackbar.Add(addItemResponse, Severity.Error);
+        }
+    }
+
+    // 6. Remove Item From Package
+    private string removeItemPackageId;
+    private int removeItemSku;
+    private string? removeItemResponse;
+    private async Task RemoveItemFromPackage()
+    {
+        removeItemResponse = null;
+        try
+        {
+            var response = await Http.DeleteAsync(
+                $"api/packages/{removeItemPackageId}/items/{removeItemSku}");
+            if (response.IsSuccessStatusCode)
+            {
+                removeItemResponse = "Item removed from package successfully.";
+                Snackbar.Add(removeItemResponse, Severity.Success);
+            }
+            else
+            {
+                removeItemResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to remove item: " + removeItemResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            removeItemResponse = "Error: " + ex.Message;
+            Snackbar.Add(removeItemResponse, Severity.Error);
+        }
+    }
+
+    // 7. Add Note To Package
+    private string addNotePackageId;
+    private string noteTitle;
+    private string noteContent;
+    private string noteCreatedBy;
+    private string? addNoteResponse;
+    private async Task AddNoteToPackage()
+    {
+        addNoteResponse = null;
+        try
+        {
+            var note = new
+            {
+                Title = noteTitle,
+                Content = noteContent,
+                CreatedBy = noteCreatedBy,
+                CreatedAt = DateTime.UtcNow
+            };
+            var response = await Http.PostAsJsonAsync($"api/packages/{addNotePackageId}/notes", note);
+            if (response.IsSuccessStatusCode)
+            {
+                addNoteResponse = "Note added to package successfully.";
+                Snackbar.Add(addNoteResponse, Severity.Success);
+            }
+            else
+            {
+                addNoteResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to add note: " + addNoteResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            addNoteResponse = "Error: " + ex.Message;
+            Snackbar.Add(addNoteResponse, Severity.Error);
+        }
+    }
+
+    // 8. Update Package Status
+    private string updateStatusPackageId;
+    private string updateStatus;
+    private string updateStatusUpdatedBy;
+    private string updateStatusNotes;
+    private string? updateStatusResponse;
+    private async Task UpdatePackageStatus()
+    {
+        updateStatusResponse = null;
+        try
+        {
+            var url = $"api/packages/{updateStatusPackageId}/status?status={updateStatus}&updatedBy={updateStatusUpdatedBy}";
+            if (!string.IsNullOrWhiteSpace(updateStatusNotes))
+                url += $"&notes={updateStatusNotes}";
+            var response = await Http.PutAsync(url, null);
+            if (response.IsSuccessStatusCode)
+            {
+                updateStatusResponse = "Package status updated successfully.";
+                Snackbar.Add(updateStatusResponse, Severity.Success);
+            }
+            else
+            {
+                updateStatusResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to update status: " + updateStatusResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            updateStatusResponse = "Error: " + ex.Message;
+            Snackbar.Add(updateStatusResponse, Severity.Error);
+        }
+    }
+
+    // 9. Pricing & Contract Info
+    private string pricingPackageId;
+    private string? pricingResponse;
+    private async Task GetTotalPrice()
+    {
+        pricingResponse = null;
+        try
+        {
+            var response = await Http.GetAsync($"api/packages/{pricingPackageId}/pricing/total");
+            if (response.IsSuccessStatusCode)
+            {
+                var price = await response.Content.ReadAsStringAsync();
+                pricingResponse = $"Total Price: {price}";
+                Snackbar.Add(pricingResponse, Severity.Success);
+            }
+            else
+            {
+                pricingResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to get total price: " + pricingResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            pricingResponse = "Error: " + ex.Message;
+            Snackbar.Add(pricingResponse, Severity.Error);
+        }
+    }
+    private async Task GetDiscountedPrice()
+    {
+        pricingResponse = null;
+        try
+        {
+            var response = await Http.GetAsync($"api/packages/{pricingPackageId}/pricing/discounted");
+            if (response.IsSuccessStatusCode)
+            {
+                var price = await response.Content.ReadAsStringAsync();
+                pricingResponse = $"Discounted Price: {price}";
+                Snackbar.Add(pricingResponse, Severity.Success);
+            }
+            else
+            {
+                pricingResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to get discounted price: " + pricingResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            pricingResponse = "Error: " + ex.Message;
+            Snackbar.Add(pricingResponse, Severity.Error);
+        }
+    }
+    private async Task GetTotalContractValue()
+    {
+        pricingResponse = null;
+        try
+        {
+            var response = await Http.GetAsync($"api/packages/{pricingPackageId}/contract/value");
+            if (response.IsSuccessStatusCode)
+            {
+                var value = await response.Content.ReadAsStringAsync();
+                pricingResponse = $"Total Contract Value: {value}";
+                Snackbar.Add(pricingResponse, Severity.Success);
+            }
+            else
+            {
+                pricingResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to get contract value: " + pricingResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            pricingResponse = "Error: " + ex.Message;
+            Snackbar.Add(pricingResponse, Severity.Error);
+        }
+    }
+    private async Task GetContractStatus()
+    {
+        pricingResponse = null;
+        try
+        {
+            var response = await Http.GetAsync($"api/packages/{pricingPackageId}/contract/status");
+            if (response.IsSuccessStatusCode)
+            {
+                var status = await response.Content.ReadAsStringAsync();
+                pricingResponse = $"Contract Active: {status}";
+                Snackbar.Add(pricingResponse, Severity.Success);
+            }
+            else
+            {
+                pricingResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to get contract status: " + pricingResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            pricingResponse = "Error: " + ex.Message;
+            Snackbar.Add(pricingResponse, Severity.Error);
+        }
+    }
+    private async Task GetRemainingContractTime()
+    {
+        pricingResponse = null;
+        try
+        {
+            var response = await Http.GetAsync($"api/packages/{pricingPackageId}/contract/remaining-time");
+            if (response.IsSuccessStatusCode)
+            {
+                var time = await response.Content.ReadAsStringAsync();
+                pricingResponse = $"Remaining Contract Time: {time}";
+                Snackbar.Add(pricingResponse, Severity.Success);
+            }
+            else
+            {
+                pricingResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to get remaining contract time: " + pricingResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            pricingResponse = "Error: " + ex.Message;
+            Snackbar.Add(pricingResponse, Severity.Error);
+        }
+    }
 }

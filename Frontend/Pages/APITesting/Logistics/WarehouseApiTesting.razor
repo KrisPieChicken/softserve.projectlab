@@ -242,7 +242,7 @@
         warehouses = null;
         try
         {
-            warehouses = await Http.GetFromJsonAsync<List<WarehouseResponseDto>>("api/warehouses");
+            warehouses = await Http.GetFromJsonAsync<List<WarehouseResponseDto>>("api/warehouses/all");
         }
         catch (Exception ex)
         {
@@ -586,7 +586,7 @@
         }
         try
         {
-            var result = await Http.PostAsJsonAsync("api/warehouses", createWarehouseDto);
+            var result = await Http.PostAsJsonAsync("api/warehouses/create", createWarehouseDto);
             if (result.IsSuccessStatusCode)
             {
                 createdWarehouse = await result.Content.ReadFromJsonAsync<WarehouseResponseDto>();

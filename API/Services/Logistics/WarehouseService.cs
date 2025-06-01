@@ -4,16 +4,20 @@ using softserve.projectlabs.Shared.DTOs.Item;
 using softserve.projectlabs.Shared.DTOs.Warehouse;
 using softserve.projectlabs.Shared.Interfaces;
 using softserve.projectlabs.Shared.Utilities;
+using API.Data.Repositories.LogisticsRepositories;
+using API.Data.Repositories.LogisticsRepositories.Interfaces;
 
 namespace API.Services.Logistics
 {
     public class WarehouseService : IWarehouseService
     {
         private readonly WarehouseDomain _warehouseDomain;
+        private readonly IWarehouseRepository _warehouseRepository;
 
-        public WarehouseService(WarehouseDomain warehouseDomain)
+        public WarehouseService(WarehouseDomain warehouseDomain, IWarehouseRepository warehouseRepository)
         {
             _warehouseDomain = warehouseDomain;
+            _warehouseRepository = warehouseRepository;
         }
 
         public async Task<List<WarehouseResponseDto>> GetAllWarehousesAsync()
@@ -146,8 +150,18 @@ namespace API.Services.Logistics
 
         public async Task<Result<bool>> UndeleteWarehouseAsync(int warehouseId)
         {
-            return await _warehouseDomain.UndeleteWarehouseAsync(warehouseId);
+            var warehouse = await _warehouseRepository.GetByIdIncludingDeletedAsync(warehouseId);
+            if (warehouse == null)
+                return Result<bool>.Failure("Warehouse not found.");
+
+            if (!warehouse.IsDeleted)
+                return Result<bool>.Failure("Warehouse is not deleted.");
+
+            warehouse.IsDeleted = false;
+            await _warehouseRepository.UpdateAsync(warehouse);
+            return Result<bool>.Success(true);
         }
+
 
         public async Task<Result<bool>> DeleteWarehouseAsync(int warehouseId)
         {

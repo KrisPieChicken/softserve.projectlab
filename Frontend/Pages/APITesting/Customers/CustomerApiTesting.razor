@@ -1,5 +1,215 @@
-﻿<h3>CustomerApiTesting</h3>
+﻿@page "/customer-api-testing"
+@using MudBlazor
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5" Class="mb-4">Customer API Testing</MudText>
+    <MudExpansionPanels>
+
+        <!-- 1. Create Customer -->
+        <MudExpansionPanel Text="Create Customer">
+            <MudForm @ref="createCustomerForm">
+                <MudTextField @bind-Value="createDto.CustomerFirstName" Label="First Name" Required="true" />
+                <MudTextField @bind-Value="createDto.CustomerLastName" Label="Last Name" Required="true" />
+                <MudTextField @bind-Value="createDto.CustomerContactNumber" Label="Contact Number" Required="true" />
+                <MudTextField @bind-Value="createDto.CustomerContactEmail" Label="Contact Email" Required="true" />
+                <MudTextField @bind-Value="createDto.BirthDateString" Label="Birth Date (yyyy-MM-dd)" />
+                <MudTextField @bind-Value="createDto.Address" Label="Address" />
+                <MudTextField @bind-Value="createDto.City" Label="City" />
+                <MudTextField @bind-Value="createDto.State" Label="State" />
+                <MudTextField @bind-Value="createDto.ZipCode" Label="Zip Code" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateCustomer" Class="mt-2">Send Request</MudButton>
+            </MudForm>
+            @if (!string.IsNullOrEmpty(createCustomerResponse))
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@createCustomerResponse</MudText>
+                </MudPaper>
+            }
+            @if (createdCustomer != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText><b>ID:</b> @createdCustomer.CustomerId</MudText>
+                    <MudText><b>Name:</b> @createdCustomer.CustomerFirstName @createdCustomer.CustomerLastName</MudText>
+                    <MudText><b>Email:</b> @createdCustomer.CustomerContactEmail</MudText>
+                </MudPaper>
+            }
+        </MudExpansionPanel>
+
+        <!-- 2. Get Customer By ID -->
+        <MudExpansionPanel Text="Get Customer By ID">
+            <MudTextField @bind-Value="getByIdId" Label="Customer ID" Required="true" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetCustomerById" Class="mt-2">Send Request</MudButton>
+            @if (customerById != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText><b>ID:</b> @customerById.CustomerId</MudText>
+                    <MudText><b>Name:</b> @customerById.CustomerFirstName @customerById.CustomerLastName</MudText>
+                    <MudText><b>Email:</b> @customerById.CustomerContactEmail</MudText>
+                </MudPaper>
+            }
+            else if (!string.IsNullOrEmpty(getByIdResponse))
+            {
+                <MudText>@getByIdResponse</MudText>
+            }
+        </MudExpansionPanel>
+
+        <!-- 3. Get All Customers -->
+        <MudExpansionPanel Text="Get All Customers">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetAllCustomers" Class="mt-2">Send Request</MudButton>
+            @if (allCustomers != null)
+            {
+                <MudTable Items="allCustomers">
+                    <HeaderContent>
+                        <MudTh>ID</MudTh>
+                        <MudTh>Name</MudTh>
+                        <MudTh>Email</MudTh>
+                        <MudTh>Contact</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.CustomerId</MudTd>
+                        <MudTd>@context.CustomerFirstName @context.CustomerLastName</MudTd>
+                        <MudTd>@context.CustomerContactEmail</MudTd>
+                        <MudTd>@context.CustomerContactNumber</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+            else if (!string.IsNullOrEmpty(allCustomersResponse))
+            {
+                <MudText>@allCustomersResponse</MudText>
+            }
+        </MudExpansionPanel>
+
+    </MudExpansionPanels>
+</MudPaper>
 
 @code {
+    // DTOs for binding and display
+    public class CustomerCreateDto
+    {
+        public string CustomerFirstName { get; set; } = string.Empty;
+        public string CustomerLastName { get; set; } = string.Empty;
+        public string CustomerContactNumber { get; set; } = string.Empty;
+        public string CustomerContactEmail { get; set; } = string.Empty;
+        public string? BirthDateString { get; set; }
+        public DateOnly? BirthDate => DateOnly.TryParse(BirthDateString, out var d) ? d : null;
+        public string Address { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public string ZipCode { get; set; } = string.Empty;
+    }
+    public class CustomerDto
+    {
+        public int CustomerId { get; set; }
+        public string CustomerFirstName { get; set; }
+        public string CustomerLastName { get; set; }
+        public string CustomerContactNumber { get; set; }
+        public string CustomerContactEmail { get; set; }
+        public DateOnly? BirthDate { get; set; }
+        public string Address { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
+        public string ZipCode { get; set; }
+    }
 
+    // 1. Create Customer
+    private MudForm? createCustomerForm;
+    private CustomerCreateDto createDto = new();
+    private string? createCustomerResponse;
+    private CustomerDto? createdCustomer;
+    private async Task CreateCustomer()
+    {
+        createCustomerResponse = null;
+        createdCustomer = null;
+        await createCustomerForm?.Validate();
+        try
+        {
+            var payload = new
+            {
+                createDto.CustomerFirstName,
+                createDto.CustomerLastName,
+                createDto.CustomerContactNumber,
+                createDto.CustomerContactEmail,
+                BirthDate = createDto.BirthDate,
+                createDto.Address,
+                createDto.City,
+                createDto.State,
+                createDto.ZipCode
+            };
+            var response = await Http.PostAsJsonAsync("api/customers", payload);
+            if (response.IsSuccessStatusCode)
+            {
+                createdCustomer = await response.Content.ReadFromJsonAsync<CustomerDto>();
+                createCustomerResponse = "Customer created successfully.";
+                Snackbar.Add(createCustomerResponse, Severity.Success);
+            }
+            else
+            {
+                createCustomerResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to create customer: " + createCustomerResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            createCustomerResponse = "Error: " + ex.Message;
+            Snackbar.Add(createCustomerResponse, Severity.Error);
+        }
+    }
+
+    // 2. Get Customer By ID
+    private int getByIdId;
+    private CustomerDto? customerById;
+    private string? getByIdResponse;
+    private async Task GetCustomerById()
+    {
+        customerById = null;
+        getByIdResponse = null;
+        try
+        {
+            var response = await Http.GetAsync($"api/customers/{getByIdId}");
+            if (response.IsSuccessStatusCode)
+            {
+                customerById = await response.Content.ReadFromJsonAsync<CustomerDto>();
+            }
+            else
+            {
+                getByIdResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to retrieve customer: " + getByIdResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            getByIdResponse = ex.Message;
+            Snackbar.Add("Error retrieving customer: " + ex.Message, Severity.Error);
+        }
+    }
+
+    // 3. Get All Customers
+    private List<CustomerDto>? allCustomers;
+    private string? allCustomersResponse;
+    private async Task GetAllCustomers()
+    {
+        allCustomers = null;
+        allCustomersResponse = null;
+        try
+        {
+            var response = await Http.GetAsync("api/customers");
+            if (response.IsSuccessStatusCode)
+            {
+                allCustomers = await response.Content.ReadFromJsonAsync<List<CustomerDto>>();
+            }
+            else
+            {
+                allCustomersResponse = await response.Content.ReadAsStringAsync();
+                Snackbar.Add("Failed to retrieve customers: " + allCustomersResponse, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            allCustomersResponse = ex.Message;
+            Snackbar.Add("Error retrieving customers: " + ex.Message, Severity.Error);
+        }
+    }
 }

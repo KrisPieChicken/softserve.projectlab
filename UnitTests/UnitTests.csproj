@@ -29,4 +29,8 @@
         <Using Include="NUnit.Framework" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Catalog\" />
+    </ItemGroup>
+
 </Project>

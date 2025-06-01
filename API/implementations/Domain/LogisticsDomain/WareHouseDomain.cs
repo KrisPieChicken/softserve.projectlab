@@ -157,7 +157,7 @@ namespace API.Implementations.Domain
             }
         }
 
-        public async Task<Result<bool>> UndeleteWarehouseAsync(int warehouseId)
+        public async Task<Result<bool>> UndeleteAsync(int warehouseId)
         {
             try
             {

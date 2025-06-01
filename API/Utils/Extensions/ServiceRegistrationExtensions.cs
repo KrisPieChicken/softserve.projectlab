@@ -72,6 +72,7 @@ public static class ServiceRegistrationExtensions
         services.AddScoped<ISupplierRepository, SupplierRepository>();
         services.AddScoped<IItemRepository, ItemRepository>();
 
+
         // 6. Logistics DTOs
         services.AddScoped<WarehouseDto>();
         services.AddScoped<BranchDto>();

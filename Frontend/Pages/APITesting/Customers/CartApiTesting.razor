@@ -38,7 +38,7 @@
                                 <MudTh>Quantity</MudTh>
                             </HeaderContent>
                             <RowTemplate>
-                                <MudTd>@context.CartId</MudTd>
+                                <MudTd>@context.ItemSku</MudTd>
                                 <MudTd>@context.Quantity</MudTd>
                             </RowTemplate>
                         </MudTable>
@@ -72,7 +72,7 @@
                                 <MudTh>Quantity</MudTh>
                             </HeaderContent>
                             <RowTemplate>
-                                <MudTd>@context.CartId</MudTd>
+                                <MudTd>@context.ItemSku</MudTd>
                                 <MudTd>@context.Quantity</MudTd>
                             </RowTemplate>
                         </MudTable>
@@ -156,12 +156,13 @@
     </MudExpansionPanels>
 </MudPaper>
 
-@code {    
+@code {
     // 1. Create Cart for Customer
     private int createCartCustomerId;
     private string? createCartResponse;
     private async Task CreateCart()
     {
+        createCartResponse = null;
         try
         {
             var response = await Http.PostAsync($"api/carts/customer/{createCartCustomerId}", null);
@@ -178,7 +179,8 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add("Error creating cart: " + ex.Message, Severity.Error);
+            createCartResponse = "Error creating cart: " + ex.Message;
+            Snackbar.Add(createCartResponse, Severity.Error);
         }
     }
 
@@ -210,8 +212,8 @@
         }
         catch (Exception ex)
         {
-            getCartByIdResponse = ex.Message;
-            Snackbar.Add("Error retrieving cart: " + ex.Message, Severity.Error);
+            getCartByIdResponse = "Error retrieving cart: " + ex.Message;
+            Snackbar.Add(getCartByIdResponse, Severity.Error);
         }
     }
 
@@ -243,8 +245,8 @@
         }
         catch (Exception ex)
         {
-            getCartByCustomerIdResponse = ex.Message;
-            Snackbar.Add("Error retrieving cart: " + ex.Message, Severity.Error);
+            getCartByCustomerIdResponse = "Error retrieving cart: " + ex.Message;
+            Snackbar.Add(getCartByCustomerIdResponse, Severity.Error);
         }
     }
 

@@ -48,7 +48,7 @@ namespace API.Data.Repositories.LogisticsRepositories
             var warehouse = await GetByIdAsync(warehouseId);
             if (warehouse != null)
             {
-                warehouse.IsDeleted = true; // Soft delete
+                warehouse.IsDeleted = true;
                 _context.WarehouseEntities.Update(warehouse);
                 await _context.SaveChangesAsync();
             }
@@ -59,6 +59,30 @@ namespace API.Data.Repositories.LogisticsRepositories
             return await _context.WarehouseEntities
                 .FirstOrDefaultAsync(w => w.WarehouseLocation == name && !w.IsDeleted);
         }
+
+        public async Task UndeleteAsync(int warehouseId)
+        {
+            var warehouse = await _context.WarehouseEntities
+                .IgnoreQueryFilters() 
+                .FirstOrDefaultAsync(w => w.WarehouseId == warehouseId);
+
+            if (warehouse != null && warehouse.IsDeleted)
+            {
+                warehouse.IsDeleted = false;
+                _context.WarehouseEntities.Update(warehouse);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<WarehouseEntity?> GetByIdIncludingDeletedAsync(int warehouseId)
+        {
+            return await _context.WarehouseEntities
+                .Include(w => w.WarehouseItemEntities)
+                .ThenInclude(wi => wi.SkuNavigation)
+                .FirstOrDefaultAsync(w => w.WarehouseId == warehouseId);
+        }
+
+
     }
 }
 

@@ -59,7 +59,6 @@
                         <MudText><b>Address:</b> @supplierById.Address</MudText>
                         <MudText><b>Created:</b> @supplierById.CreatedAt</MudText>
                         <MudText><b>Updated:</b> @supplierById.UpdatedAt</MudText>
-                        <MudText><b>IsDeleted:</b> @supplierById.IsDeleted</MudText>
                     </MudCardContent>
                 </MudCard>
             }
@@ -83,7 +82,6 @@
                         <MudTh>Address</MudTh>
                         <MudTh>Created</MudTh>
                         <MudTh>Updated</MudTh>
-                        <MudTh>IsDeleted</MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd>@context.SupplierId</MudTd>
@@ -93,7 +91,6 @@
                         <MudTd>@context.Address</MudTd>
                         <MudTd>@context.CreatedAt</MudTd>
                         <MudTd>@context.UpdatedAt</MudTd>
-                        <MudTd>@context.IsDeleted</MudTd>
                     </RowTemplate>
                 </MudTable>
             }

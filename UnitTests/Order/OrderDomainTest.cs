@@ -239,8 +239,7 @@ namespace UnitTests.Order
                 CustomerId = 1,
                 CustomerContactEmail = "test@example.com",
                 CustomerContactNumber = "1234567890",
-                CustomerName = "Test Customer",
-                CustomerType = "Individual",
+                CustomerFirstName = "Test Customer",
                 CartEntities = new List<CartEntity>(),
                 OrderEntities = new List<OrderEntity>()
             });
@@ -304,8 +303,7 @@ namespace UnitTests.Order
                 CustomerId = 1,
                 CustomerContactEmail = "test@example.com",
                 CustomerContactNumber = "1234567890",
-                CustomerName = "Test Customer",
-                CustomerType = "Individual",
+                CustomerFirstName = "Test Customer",
                 CartEntities = new List<CartEntity>(),
                 OrderEntities = new List<OrderEntity>()
             });
@@ -389,8 +387,7 @@ namespace UnitTests.Order
                 CustomerId = 1,
                 CustomerContactEmail = "test@example.com",
                 CustomerContactNumber = "1234567890",
-                CustomerName = "Test Customer",
-                CustomerType = "Individual",
+                CustomerFirstName = "Test Customer",
                 CartEntities = new List<CartEntity>(),
                 OrderEntities = new List<OrderEntity>()
             });

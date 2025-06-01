@@ -172,7 +172,7 @@ namespace UnitTests.WarehouseTests;
             _repoMock.Setup(r => r.UpdateAsync(entity)).Returns(Task.CompletedTask);
 
             // Act
-            var result = await _domain.UndeleteWarehouseAsync(1);
+            var result = await _domain.UndeleteAsync(1);
 
             // Assert
             TestContext.WriteLine($"Result: IsSuccess={result.IsSuccess}, Data={result.Data}, IsDeleted={entity.IsDeleted}");

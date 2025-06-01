@@ -10,5 +10,8 @@ namespace API.Data.Repositories.LogisticsRepositories.Interfaces
         Task UpdateAsync(WarehouseEntity warehouseEntity);
         Task DeleteAsync(int warehouseId);
         Task<WarehouseEntity?> GetByNameAsync(string name);
+        Task UndeleteAsync(int warehouseId);
+        Task<WarehouseEntity?> GetByIdIncludingDeletedAsync(int warehouseId);
+
     }
 }
