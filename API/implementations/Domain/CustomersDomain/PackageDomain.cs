@@ -24,17 +24,18 @@ namespace API.Implementations.Domain
         {
             try
             {
-                // Verificar si el cliente existe
+                // Check if the customer exists
                 var customerEntity = await _context.CustomerEntities.FindAsync(customerId);
                 if (customerEntity == null)
                 {
-                    return Result<Package>.Failure("Cliente no encontrado");
+                    return Result<Package>.Failure("Customer not found");
                 }
 
-                // Crear la entidad de paquete
+                // Create the package entity
                 var packageEntity = new PackageEntity
                 {
                     PackageName = package.Name,
+                    CustomerId = customerId,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     IsDeleted = false
@@ -43,11 +44,11 @@ namespace API.Implementations.Domain
                 _context.PackageEntities.Add(packageEntity);
                 await _context.SaveChangesAsync();
 
-                // Asignar el ID generado al modelo
+                // Assign the generated ID to the model
                 package.Id = packageEntity.PackageId.ToString();
                 package.Customer = new Customer { CustomerId = customerId };
 
-                // Si hay elementos en el paquete, agregarlos
+                // If there are items in the package, add them
                 if (package.Items != null && package.Items.Any())
                 {
                     foreach (var item in package.Items)
@@ -67,7 +68,7 @@ namespace API.Implementations.Domain
                     }
                 }
 
-                // Si hay notas en el paquete, agregarlas
+                // If there are notes in the package, add them
                 if (package.Notes != null && package.Notes.Any())
                 {
                     foreach (var note in package.Notes)
@@ -94,7 +95,7 @@ namespace API.Implementations.Domain
             }
             catch (Exception ex)
             {
-                return Result<Package>.Failure($"Error al crear el paquete: {ex.Message}");
+                return Result<Package>.Failure($"Error creating package: {ex.Message}");
             }
         }
 
@@ -104,7 +105,7 @@ namespace API.Implementations.Domain
             {
                 if (!int.TryParse(packageId, out int id))
                 {
-                    return Result<Package>.Failure("ID de paquete inválido");
+                    return Result<Package>.Failure("Invalid package ID");
                 }
 
                 var packageEntity = await _context.PackageEntities
@@ -115,7 +116,7 @@ namespace API.Implementations.Domain
 
                 if (packageEntity == null)
                 {
-                    return Result<Package>.Failure("Paquete no encontrado");
+                    return Result<Package>.Failure("Package not found");
                 }
 
                 var package = MapToModel(packageEntity);
@@ -123,7 +124,7 @@ namespace API.Implementations.Domain
             }
             catch (Exception ex)
             {
-                return Result<Package>.Failure($"Error al obtener el paquete: {ex.Message}");
+                return Result<Package>.Failure($"Error retrieving package: {ex.Message}");
             }
         }
 
@@ -131,25 +132,28 @@ namespace API.Implementations.Domain
         {
             try
             {
-                // Verificar si el cliente existe
                 var customerEntity = await _context.CustomerEntities.FindAsync(customerId);
                 if (customerEntity == null)
-                {
-                    return Result<List<Package>>.Failure("Cliente no encontrado");
-                }
+                    return Result<List<Package>>.Failure("Customer not found");
 
-                // En este caso, asumimos que necesitamos un método adicional para obtener los paquetes de un cliente
-                // Esto podría requerir una relación adicional en la base de datos o una consulta personalizada
-                // Para este ejemplo, vamos a devolver una lista vacía
-                var packages = new List<Package>();
+                var packageEntities = await _context.PackageEntities
+                    .Where(p => p.CustomerId == customerId && !p.IsDeleted)
+                    .Include(p => p.PackageItemEntities)
+                        .ThenInclude(pi => pi.SkuNavigation)
+                    .Include(p => p.PackageNoteEntities)
+                    .ToListAsync();
+
+
+                var packages = packageEntities.Select(MapToModel).ToList();
 
                 return Result<List<Package>>.Success(packages);
             }
             catch (Exception ex)
             {
-                return Result<List<Package>>.Failure($"Error al obtener los paquetes: {ex.Message}");
+                return Result<List<Package>>.Failure($"Error retrieving packages: {ex.Message}");
             }
         }
+
 
         public async Task<Result<Package>> UpdatePackageAsync(Package package)
         {
@@ -157,16 +161,16 @@ namespace API.Implementations.Domain
             {
                 if (!int.TryParse(package.Id, out int id))
                 {
-                    return Result<Package>.Failure("ID de paquete inválido");
+                    return Result<Package>.Failure("Invalid package ID");
                 }
 
                 var packageEntity = await _context.PackageEntities.FindAsync(id);
                 if (packageEntity == null)
                 {
-                    return Result<Package>.Failure("Paquete no encontrado");
+                    return Result<Package>.Failure("Package not found");
                 }
 
-                // Actualizar propiedades básicas
+                // Update basic properties
                 packageEntity.PackageName = package.Name;
                 packageEntity.UpdatedAt = DateTime.UtcNow;
 
@@ -177,7 +181,7 @@ namespace API.Implementations.Domain
             }
             catch (Exception ex)
             {
-                return Result<Package>.Failure($"Error al actualizar el paquete: {ex.Message}");
+                return Result<Package>.Failure($"Error updating package: {ex.Message}");
             }
         }
 
@@ -187,16 +191,16 @@ namespace API.Implementations.Domain
             {
                 if (!int.TryParse(packageId, out int id))
                 {
-                    return Result<bool>.Failure("ID de paquete inválido");
+                    return Result<bool>.Failure("Invalid package ID");
                 }
 
                 var packageEntity = await _context.PackageEntities.FindAsync(id);
                 if (packageEntity == null)
                 {
-                    return Result<bool>.Failure("Paquete no encontrado");
+                    return Result<bool>.Failure("Package not found");
                 }
 
-                // Marcar como eliminado en lugar de eliminar físicamente
+                // Mark as deleted instead of physically deleting
                 packageEntity.IsDeleted = true;
                 packageEntity.UpdatedAt = DateTime.UtcNow;
 
@@ -206,7 +210,7 @@ namespace API.Implementations.Domain
             }
             catch (Exception ex)
             {
-                return Result<bool>.Failure($"Error al eliminar el paquete: {ex.Message}");
+                return Result<bool>.Failure($"Error deleting package: {ex.Message}");
             }
         }
 
@@ -216,43 +220,43 @@ namespace API.Implementations.Domain
             {
                 if (!int.TryParse(packageId, out int id))
                 {
-                    return Result<Package>.Failure("ID de paquete inválido");
+                    return Result<Package>.Failure("Invalid package ID");
                 }
 
                 if (quantity <= 0)
                 {
-                    return Result<Package>.Failure("La cantidad debe ser positiva");
+                    return Result<Package>.Failure("Quantity must be positive");
                 }
 
-                // Verificar si el paquete existe
+                // Check if the package exists
                 var packageEntity = await _context.PackageEntities
                     .Include(p => p.PackageItemEntities)
                     .FirstOrDefaultAsync(p => p.PackageId == id && !p.IsDeleted);
 
                 if (packageEntity == null)
                 {
-                    return Result<Package>.Failure("Paquete no encontrado");
+                    return Result<Package>.Failure("Package not found");
                 }
 
-                // Verificar si el item existe
+                // Check if the item exists
                 var itemEntity = await _context.ItemEntities.FindAsync(itemSku);
                 if (itemEntity == null)
                 {
-                    return Result<Package>.Failure("Item no encontrado");
+                    return Result<Package>.Failure("Item not found");
                 }
 
-                // Verificar si el item ya está en el paquete
+                // Check if the item is already in the package
                 var existingItem = packageEntity.PackageItemEntities
                     .FirstOrDefault(pi => pi.Sku == itemSku);
 
                 if (existingItem != null)
                 {
-                    // Actualizar la cantidad
+                    // Update the quantity
                     existingItem.ItemQuantity += quantity;
                 }
                 else
                 {
-                    // Añadir nuevo item al paquete
+                    // Add new item to the package
                     var packageItemEntity = new PackageItemEntity
                     {
                         PackageId = id,
@@ -263,17 +267,17 @@ namespace API.Implementations.Domain
                     _context.PackageItemEntities.Add(packageItemEntity);
                 }
 
-                // Actualizar la fecha de actualización del paquete
+                // Update the package's updated date
                 packageEntity.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
 
-                // Obtener el paquete actualizado
+                // Get the updated package
                 return await GetPackageByIdAsync(packageId);
             }
             catch (Exception ex)
             {
-                return Result<Package>.Failure($"Error al añadir item al paquete: {ex.Message}");
+                return Result<Package>.Failure($"Error adding item to package: {ex.Message}");
             }
         }
 
@@ -283,42 +287,42 @@ namespace API.Implementations.Domain
             {
                 if (!int.TryParse(packageId, out int id))
                 {
-                    return Result<Package>.Failure("ID de paquete inválido");
+                    return Result<Package>.Failure("Invalid package ID");
                 }
 
-                // Verificar si el paquete existe
+                // Check if the package exists
                 var packageEntity = await _context.PackageEntities
                     .Include(p => p.PackageItemEntities)
                     .FirstOrDefaultAsync(p => p.PackageId == id && !p.IsDeleted);
 
                 if (packageEntity == null)
                 {
-                    return Result<Package>.Failure("Paquete no encontrado");
+                    return Result<Package>.Failure("Package not found");
                 }
 
-                // Verificar si el item existe en el paquete
+                // Check if the item exists in the package
                 var existingItem = packageEntity.PackageItemEntities
                     .FirstOrDefault(pi => pi.Sku == itemSku);
 
                 if (existingItem == null)
                 {
-                    return Result<Package>.Failure($"Item con SKU {itemSku} no encontrado en el paquete");
+                    return Result<Package>.Failure($"Item with SKU {itemSku} not found in the package");
                 }
 
-                // Eliminar el item del paquete
+                // Remove the item from the package
                 _context.PackageItemEntities.Remove(existingItem);
 
-                // Actualizar la fecha de actualización del paquete
+                // Update the package's updated date
                 packageEntity.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
 
-                // Obtener el paquete actualizado
+                // Get the updated package
                 return await GetPackageByIdAsync(packageId);
             }
             catch (Exception ex)
             {
-                return Result<Package>.Failure($"Error al eliminar item del paquete: {ex.Message}");
+                return Result<Package>.Failure($"Error removing item from package: {ex.Message}");
             }
         }
 
@@ -328,17 +332,17 @@ namespace API.Implementations.Domain
             {
                 if (!int.TryParse(packageId, out int id))
                 {
-                    return Result<Package>.Failure("ID de paquete inválido");
+                    return Result<Package>.Failure("Invalid package ID");
                 }
 
-                // Verificar si el paquete existe
+                // Check if the package exists
                 var packageEntity = await _context.PackageEntities.FindAsync(id);
                 if (packageEntity == null)
                 {
-                    return Result<Package>.Failure("Paquete no encontrado");
+                    return Result<Package>.Failure("Package not found");
                 }
 
-                // Crear la nota
+                // Create the note
                 var packageNoteEntity = new PackageNoteEntity
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -353,17 +357,17 @@ namespace API.Implementations.Domain
 
                 _context.PackageNoteEntities.Add(packageNoteEntity);
 
-                // Actualizar la fecha de actualización del paquete
+                // Update the package's updated date
                 packageEntity.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
 
-                // Obtener el paquete actualizado
+                // Get the updated package
                 return await GetPackageByIdAsync(packageId);
             }
             catch (Exception ex)
             {
-                return Result<Package>.Failure($"Error al añadir nota al paquete: {ex.Message}");
+                return Result<Package>.Failure($"Error adding note to package: {ex.Message}");
             }
         }
 
@@ -373,17 +377,17 @@ namespace API.Implementations.Domain
             {
                 if (!int.TryParse(packageId, out int id))
                 {
-                    return Result<Package>.Failure("ID de paquete inválido");
+                    return Result<Package>.Failure("Invalid package ID");
                 }
 
-                // Verificar si el paquete existe
+                // Check if the package exists
                 var packageEntity = await _context.PackageEntities.FindAsync(id);
                 if (packageEntity == null)
                 {
-                    return Result<Package>.Failure("Paquete no encontrado");
+                    return Result<Package>.Failure("Package not found");
                 }
 
-                // Crear una nota para el cambio de estado si se proporcionaron notas
+                // Create a note for the status change if notes were provided
                 if (!string.IsNullOrEmpty(notes))
                 {
                     var packageNoteEntity = new PackageNoteEntity
@@ -401,17 +405,17 @@ namespace API.Implementations.Domain
                     _context.PackageNoteEntities.Add(packageNoteEntity);
                 }
 
-                // Actualizar la fecha de actualización del paquete
+                // Update the package's updated date
                 packageEntity.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
 
-                // Obtener el paquete actualizado
+                // Get the updated package
                 return await GetPackageByIdAsync(packageId);
             }
             catch (Exception ex)
             {
-                return Result<Package>.Failure($"Error al actualizar el estado del paquete: {ex.Message}");
+                return Result<Package>.Failure($"Error updating package status: {ex.Message}");
             }
         }
 
@@ -421,7 +425,7 @@ namespace API.Implementations.Domain
             {
                 if (!int.TryParse(packageId, out int id))
                 {
-                    return Result<decimal>.Failure("ID de paquete inválido");
+                    return Result<decimal>.Failure("Invalid package ID");
                 }
 
                 var packageResult = await GetPackageByIdAsync(packageId);
@@ -437,7 +441,7 @@ namespace API.Implementations.Domain
             }
             catch (Exception ex)
             {
-                return Result<decimal>.Failure($"Error al calcular el precio total: {ex.Message}");
+                return Result<decimal>.Failure($"Error calculating total price: {ex.Message}");
             }
         }
 
@@ -447,7 +451,7 @@ namespace API.Implementations.Domain
             {
                 if (!int.TryParse(packageId, out int id))
                 {
-                    return Result<decimal>.Failure("ID de paquete inválido");
+                    return Result<decimal>.Failure("Invalid package ID");
                 }
 
                 var packageResult = await GetPackageByIdAsync(packageId);
@@ -463,7 +467,7 @@ namespace API.Implementations.Domain
             }
             catch (Exception ex)
             {
-                return Result<decimal>.Failure($"Error al calcular el precio con descuento: {ex.Message}");
+                return Result<decimal>.Failure($"Error calculating discounted price: {ex.Message}");
             }
         }
 
@@ -473,7 +477,7 @@ namespace API.Implementations.Domain
             {
                 if (!int.TryParse(packageId, out int id))
                 {
-                    return Result<decimal>.Failure("ID de paquete inválido");
+                    return Result<decimal>.Failure("Invalid package ID");
                 }
 
                 var packageResult = await GetPackageByIdAsync(packageId);
@@ -489,7 +493,7 @@ namespace API.Implementations.Domain
             }
             catch (Exception ex)
             {
-                return Result<decimal>.Failure($"Error al calcular el valor total del contrato: {ex.Message}");
+                return Result<decimal>.Failure($"Error calculating total contract value: {ex.Message}");
             }
         }
 
@@ -499,7 +503,7 @@ namespace API.Implementations.Domain
             {
                 if (!int.TryParse(packageId, out int id))
                 {
-                    return Result<bool>.Failure("ID de paquete inválido");
+                    return Result<bool>.Failure("Invalid package ID");
                 }
 
                 var packageResult = await GetPackageByIdAsync(packageId);
@@ -515,7 +519,7 @@ namespace API.Implementations.Domain
             }
             catch (Exception ex)
             {
-                return Result<bool>.Failure($"Error al verificar si el contrato está activo: {ex.Message}");
+                return Result<bool>.Failure($"Error checking if contract is active: {ex.Message}");
             }
         }
 
@@ -525,7 +529,7 @@ namespace API.Implementations.Domain
             {
                 if (!int.TryParse(packageId, out int id))
                 {
-                    return Result<TimeSpan>.Failure("ID de paquete inválido");
+                    return Result<TimeSpan>.Failure("Invalid package ID");
                 }
 
                 var packageResult = await GetPackageByIdAsync(packageId);
@@ -541,7 +545,7 @@ namespace API.Implementations.Domain
             }
             catch (Exception ex)
             {
-                return Result<TimeSpan>.Failure($"Error al obtener el tiempo restante del contrato: {ex.Message}");
+                return Result<TimeSpan>.Failure($"Error getting remaining contract time: {ex.Message}");
             }
         }
 
@@ -551,22 +555,22 @@ namespace API.Implementations.Domain
             {
                 Id = entity.PackageId.ToString(),
                 Name = entity.PackageName,
-                Description = string.Empty, // No disponible en la entidad
-                SaleDate = entity.CreatedAt, // Asumimos la fecha de creación como fecha de venta
-                Status = "Processing", // Valor predeterminado ya que no está en la entidad
-                ContractTermMonths = 12, // Valor predeterminado
+                Description = string.Empty, // Not available in the entity
+                SaleDate = entity.CreatedAt, // Assume creation date as sale date
+                Status = "Processing", // Default value as it's not in the entity
+                ContractTermMonths = 12, // Default value
                 ContractStartDate = entity.CreatedAt,
-                MonthlyFee = 0, // Valor predeterminado
-                SetupFee = 0, // Valor predeterminado
-                DiscountAmount = 0, // Valor predeterminado
-                PaymentMethod = "Credit Card", // Valor predeterminado
-                ShippingAddress = string.Empty, // Valor predeterminado
-                IsRenewal = false, // Valor predeterminado
+                MonthlyFee = 0, // Default value
+                SetupFee = 0, // Default value
+                DiscountAmount = 0, // Default value
+                PaymentMethod = "Credit Card", // Default value
+                ShippingAddress = string.Empty, // Default value
+                IsRenewal = false, // Default value
                 Items = new List<PackageItem>(),
                 Notes = new List<PackageNote>()
             };
 
-            // Mapear los items del paquete
+            // Map package items
             if (entity.PackageItemEntities != null)
             {
                 foreach (var itemEntity in entity.PackageItemEntities)
@@ -588,7 +592,7 @@ namespace API.Implementations.Domain
                 }
             }
 
-            // Mapear las notas del paquete
+            // Map package notes
             if (entity.PackageNoteEntities != null)
             {
                 foreach (var noteEntity in entity.PackageNoteEntities)

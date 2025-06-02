@@ -10,24 +10,32 @@
     <MudExpansionPanels>
 
         <!-- 1. Create Package for Customer -->
+        <!-- 1. Create Package for Customer -->
         <MudExpansionPanel Text="Create Package for Customer">
             <MudTextField @bind-Value="createCustomerId" Label="Customer ID" Required="true" InputType="InputType.Number" />
+
             <MudTextField @bind-Value="createPackage.Name" Label="Package Name" Required="true" />
             <MudTextField @bind-Value="createPackage.Description" Label="Description" />
             <MudTextField @bind-Value="createPackage.Status" Label="Status" />
-            <MudTextField @bind-Value="createPackage.SaleDateString" Label="Sale Date (yyyy-MM-dd)" />
+
+            <MudDatePicker @bind-Date="createPackage.SaleDate" Label="Sale Date" DateFormat="yyyy-MM-dd" />
+
             <MudTextField @bind-Value="createPackage.ContractId" Label="Contract Id" />
             <MudTextField @bind-Value="createPackage.ContractTermMonthsString" Label="Contract Term (Months)" InputType="InputType.Number" />
-            <MudTextField @bind-Value="createPackage.ContractStartDateString" Label="Contract Start Date (yyyy-MM-dd)" />
-            <MudTextField @bind-Value="createPackage.ContractEndDateString" Label="Contract End Date (yyyy-MM-dd)" />
+
+            <MudDatePicker @bind-Date="createPackage.ContractStartDate" Label="Contract Start Date" DateFormat="yyyy-MM-dd" />
+            <MudDatePicker @bind-Date="createPackage.ContractEndDate" Label="Contract End Date" DateFormat="yyyy-MM-dd" />
+
             <MudTextField @bind-Value="createPackage.MonthlyFeeString" Label="Monthly Fee" InputType="InputType.Number" />
             <MudTextField @bind-Value="createPackage.SetupFeeString" Label="Setup Fee" InputType="InputType.Number" />
             <MudTextField @bind-Value="createPackage.DiscountAmountString" Label="Discount Amount" InputType="InputType.Number" />
             <MudTextField @bind-Value="createPackage.PaymentMethod" Label="Payment Method" />
             <MudTextField @bind-Value="createPackage.ShippingAddress" Label="Shipping Address" />
             <MudTextField @bind-Value="createPackage.TrackingNumber" Label="Tracking Number" />
-            <MudTextField @bind-Value="createPackage.EstimatedDeliveryDateString" Label="Estimated Delivery Date (yyyy-MM-dd)" />
-            <MudTextField @bind-Value="createPackage.ActualDeliveryDateString" Label="Actual Delivery Date (yyyy-MM-dd)" />
+
+            <MudDatePicker @bind-Date="createPackage.EstimatedDeliveryDate" Label="Estimated Delivery Date" DateFormat="yyyy-MM-dd" />
+            <MudDatePicker @bind-Date="createPackage.ActualDeliveryDate" Label="Actual Delivery Date" DateFormat="yyyy-MM-dd" />
+
             <MudCheckBox T="bool" @bind-Checked="createPackage.IsRenewal" Label="Is Renewal" />
             <MudTextField @bind-Value="createPackage.PreviousPackageId" Label="Previous Package Id" />
             <MudDivider Class="my-2" />
@@ -35,7 +43,6 @@
             <MudTextField @bind-Value="newItemSku" Label="Item SKU" InputType="InputType.Number" />
             <MudTextField @bind-Value="newItemQuantity" Label="Quantity" InputType="InputType.Number" />
             <MudButton OnClick="AddItemToNewPackage" Variant="Variant.Outlined" Color="Color.Secondary" Class="ml-2">Add Item</MudButton>
-            <MudCheckBox T="bool" @bind-Checked="createPackage.IsRenewal" Label="Is Renewal" />
 
             <MudList T="PackageItemDto">
                 @foreach (var item in createPackage.Items)
@@ -46,7 +53,6 @@
                     </MudListItem>
                 }
             </MudList>
-
 
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreatePackage" Class="mt-2">Send Request</MudButton>
             @if (!string.IsNullOrEmpty(createPackageResponse))
@@ -94,11 +100,41 @@
                         <MudTh>ID</MudTh>
                         <MudTh>Name</MudTh>
                         <MudTh>Status</MudTh>
+                        <MudTh>Description</MudTh>
+                        <MudTh>Sale Date</MudTh>
+                        <MudTh>Contract Term</MudTh>
+                        <MudTh>Monthly Fee</MudTh>
+                        <MudTh>Setup Fee</MudTh>
+                        <MudTh>Discount</MudTh>
+                        <MudTh>Payment Method</MudTh>
+                        <MudTh>Shipping Address</MudTh>
+                        <MudTh>Is Renewal</MudTh>
+                        <MudTh>Items</MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd>@context.Id</MudTd>
                         <MudTd>@context.Name</MudTd>
                         <MudTd>@context.Status</MudTd>
+                        <MudTd>@context.Description</MudTd>
+                        <MudTd>@context.SaleDate.ToShortDateString()</MudTd>
+                        <MudTd>@context.ContractTermMonths</MudTd>
+                        <MudTd>@context.MonthlyFee</MudTd>
+                        <MudTd>@context.SetupFee</MudTd>
+                        <MudTd>@context.DiscountAmount</MudTd>
+                        <MudTd>@context.PaymentMethod</MudTd>
+                        <MudTd>@context.ShippingAddress</MudTd>
+                        <MudTd>@context.IsRenewal</MudTd>
+                        <MudTd>
+                            @if (context.Items != null)
+                            {
+                                <ul>
+                                    @foreach (var item in context.Items)
+                                    {
+                                        <li>SKU: @item.ItemSku, Qty: @item.Quantity</li>
+                                    }
+                                </ul>
+                            }
+                        </MudTd>
                     </RowTemplate>
                 </MudTable>
             }
@@ -197,29 +233,6 @@
 </MudPaper>
 
 @code {
-    // Helper DTO for form input (with string fields for dates/numbers)
-    public class PackageDtoForm
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
-        public string SaleDateString { get; set; } = string.Empty;
-        public string ContractId { get; set; } = string.Empty;
-        public string ContractTermMonthsString { get; set; } = "12";
-        public string ContractStartDateString { get; set; } = string.Empty;
-        public string ContractEndDateString { get; set; } = string.Empty;
-        public string MonthlyFeeString { get; set; } = "0";
-        public string SetupFeeString { get; set; } = "0";
-        public string DiscountAmountString { get; set; } = "0";
-        public string PaymentMethod { get; set; } = string.Empty;
-        public string ShippingAddress { get; set; } = string.Empty;
-        public string TrackingNumber { get; set; } = string.Empty;
-        public string EstimatedDeliveryDateString { get; set; } = string.Empty;
-        public string ActualDeliveryDateString { get; set; } = string.Empty;
-        public bool IsRenewal { get; set; }
-        public string PreviousPackageId { get; set; } = string.Empty;
-        public List<PackageItemDto> Items { get; set; } = new();
-    }
 
     private int createCustomerId;
     private PackageDtoForm createPackage = new();
@@ -239,6 +252,33 @@
         createPackage.Items.Remove(item);
     }
 
+    // Date change handlers for MudDatePicker
+    private void OnSaleDateChanged(DateTime? date)
+    {
+        createPackage.SaleDate = date;
+        createPackage.SaleDateString = date?.ToString("yyyy-MM-dd") ?? "";
+    }
+    private void OnContractStartDateChanged(DateTime? date)
+    {
+        createPackage.ContractStartDate = date;
+        createPackage.ContractStartDateString = date?.ToString("yyyy-MM-dd") ?? "";
+    }
+    private void OnContractEndDateChanged(DateTime? date)
+    {
+        createPackage.ContractEndDate = date;
+        createPackage.ContractEndDateString = date?.ToString("yyyy-MM-dd") ?? "";
+    }
+    private void OnEstimatedDeliveryDateChanged(DateTime? date)
+    {
+        createPackage.EstimatedDeliveryDate = date;
+        createPackage.EstimatedDeliveryDateString = date?.ToString("yyyy-MM-dd") ?? "";
+    }
+    private void OnActualDeliveryDateChanged(DateTime? date)
+    {
+        createPackage.ActualDeliveryDate = date;
+        createPackage.ActualDeliveryDateString = date?.ToString("yyyy-MM-dd") ?? "";
+    }
+
     private async Task CreatePackage()
     {
         createPackageResponse = null;
@@ -247,29 +287,43 @@
         {
             var payload = new
             {
-                package = new
+                Name = createPackage.Name,
+                Description = createPackage.Description,
+                Status = createPackage.Status,
+                SaleDate = DateTime.TryParse(createPackage.SaleDateString, out var saleDate) ? saleDate : DateTime.UtcNow,
+                Customer = new
                 {
-                    Name = createPackage.Name,
-                    Description = createPackage.Description,
-                    Status = createPackage.Status,
-                    SaleDate = DateTime.TryParse(createPackage.SaleDateString, out var saleDate) ? saleDate : DateTime.UtcNow,
-                    Items = createPackage.Items,
-                    ContractId = string.IsNullOrWhiteSpace(createPackage.ContractId) ? null : createPackage.ContractId,
-                    ContractTermMonths = int.TryParse(createPackage.ContractTermMonthsString, out var ctm) ? ctm : 12,
-                    ContractStartDate = DateTime.TryParse(createPackage.ContractStartDateString, out var csd) ? csd : DateTime.UtcNow,
-                    ContractEndDate = DateTime.TryParse(createPackage.ContractEndDateString, out var ced) ? ced : DateTime.UtcNow.AddMonths(12),
-                    MonthlyFee = decimal.TryParse(createPackage.MonthlyFeeString, out var mf) ? mf : 0,
-                    SetupFee = decimal.TryParse(createPackage.SetupFeeString, out var sf) ? sf : 0,
-                    DiscountAmount = decimal.TryParse(createPackage.DiscountAmountString, out var da) ? da : 0,
-                    PaymentMethod = createPackage.PaymentMethod,
-                    ShippingAddress = createPackage.ShippingAddress,
-                    TrackingNumber = string.IsNullOrWhiteSpace(createPackage.TrackingNumber) ? null : createPackage.TrackingNumber,
-                    EstimatedDeliveryDate = DateTime.TryParse(createPackage.EstimatedDeliveryDateString, out var edd) ? edd : (DateTime?)null,
-                    ActualDeliveryDate = DateTime.TryParse(createPackage.ActualDeliveryDateString, out var add) ? add : (DateTime?)null,
-                    IsRenewal = createPackage.IsRenewal,
-                    PreviousPackageId = string.IsNullOrWhiteSpace(createPackage.PreviousPackageId) ? null : createPackage.PreviousPackageId
-                }
+                    CustomerId = createCustomerId,
+                    CustomerFirstName = "", // Required by backend validation, but will be ignored
+                    CustomerLastName = "",
+                    CustomerContactEmail = "",
+                    CustomerContactNumber = "",
+                    Address = "",
+                    City = "",
+                    State = "",
+                    ZipCode = ""
+                },
+                Items = createPackage.Items.Select(i => new
+                {
+                    Item = new { Sku = i.ItemSku },
+                    Quantity = i.Quantity
+                }).ToList(),
+                ContractId = string.IsNullOrWhiteSpace(createPackage.ContractId) ? null : createPackage.ContractId,
+                ContractTermMonths = int.TryParse(createPackage.ContractTermMonthsString, out var ctm) ? ctm : 12,
+                ContractStartDate = DateTime.TryParse(createPackage.ContractStartDateString, out var csd) ? csd : DateTime.UtcNow,
+                ContractEndDate = DateTime.TryParse(createPackage.ContractEndDateString, out var ced) ? ced : DateTime.UtcNow.AddMonths(12),
+                MonthlyFee = decimal.TryParse(createPackage.MonthlyFeeString, out var mf) ? mf : 0,
+                SetupFee = decimal.TryParse(createPackage.SetupFeeString, out var sf) ? sf : 0,
+                DiscountAmount = decimal.TryParse(createPackage.DiscountAmountString, out var da) ? da : 0,
+                PaymentMethod = createPackage.PaymentMethod,
+                ShippingAddress = createPackage.ShippingAddress,
+                TrackingNumber = string.IsNullOrWhiteSpace(createPackage.TrackingNumber) ? null : createPackage.TrackingNumber,
+                EstimatedDeliveryDate = DateTime.TryParse(createPackage.EstimatedDeliveryDateString, out var edd) ? edd : (DateTime?)null,
+                ActualDeliveryDate = DateTime.TryParse(createPackage.ActualDeliveryDateString, out var add) ? add : (DateTime?)null,
+                IsRenewal = createPackage.IsRenewal,
+                PreviousPackageId = string.IsNullOrWhiteSpace(createPackage.PreviousPackageId) ? null : createPackage.PreviousPackageId
             };
+
             var response = await Http.PostAsJsonAsync($"api/packages/customer/{createCustomerId}", payload);
 
             if (response.IsSuccessStatusCode)
@@ -290,6 +344,7 @@
             Snackbar.Add(createPackageResponse, Severity.Error);
         }
     }
+
 
     // 2. Get Package By ID
     private string getPackageId;

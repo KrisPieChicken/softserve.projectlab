@@ -28,9 +28,12 @@
             @if (cartById != null)
             {
                 <MudPaper Class="pa-2 mt-2">
-                    <MudText><b>Cart ID:</b> @cartById?.Id ?? "N/A"</MudText>
-                    <MudText><b>Customer ID:</b> @cartById?.CustomerId ?? 0</MudText>
-                    @if (cartById?.Items != null && cartById.Items.Any())
+                    <MudText><b>Cart ID:</b> @cartById.Id</MudText>
+                    <MudText><b>Customer ID:</b> @cartById.CustomerId</MudText>
+                    <MudText><b>Created At:</b> @cartById.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</MudText>
+                    <MudText><b>Updated At:</b> @cartById.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss")</MudText>
+                    <MudText><b>Items:</b></MudText>
+                    @if (cartById.Items != null && cartById.Items.Any())
                     {
                         <MudTable Items="cartById.Items">
                             <HeaderContent>
@@ -51,7 +54,9 @@
             }
             else if (!string.IsNullOrEmpty(getCartByIdResponse))
             {
-                <MudText>@getCartByIdResponse</MudText>
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@getCartByIdResponse</MudText>
+                </MudPaper>
             }
         </MudExpansionPanel>
 
@@ -62,9 +67,12 @@
             @if (cartByCustomerId != null)
             {
                 <MudPaper Class="pa-2 mt-2">
-                    <MudText><b>Cart ID:</b> @cartByCustomerId?.Id ?? "N/A"</MudText>
-                    <MudText><b>Customer ID:</b> @cartByCustomerId?.CustomerId ?? 0</MudText>
-                    @if (cartByCustomerId?.Items != null && cartByCustomerId.Items.Any())
+                    <MudText><b>Cart ID:</b> @cartByCustomerId.Id</MudText>
+                    <MudText><b>Customer ID:</b> @cartByCustomerId.CustomerId</MudText>
+                    <MudText><b>Created At:</b> @cartByCustomerId.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</MudText>
+                    <MudText><b>Updated At:</b> @cartByCustomerId.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss")</MudText>
+                    <MudText><b>Items:</b></MudText>
+                    @if (cartByCustomerId.Items != null && cartByCustomerId.Items.Any())
                     {
                         <MudTable Items="cartByCustomerId.Items">
                             <HeaderContent>
@@ -85,7 +93,9 @@
             }
             else if (!string.IsNullOrEmpty(getCartByCustomerIdResponse))
             {
-                <MudText>@getCartByCustomerIdResponse</MudText>
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText>@getCartByCustomerIdResponse</MudText>
+                </MudPaper>
             }
         </MudExpansionPanel>
 
@@ -95,7 +105,34 @@
             <MudTextField @bind-Value="addItemSku" Label="Item SKU" Required="true" />
             <MudTextField @bind-Value="addItemQuantity" Label="Quantity" Required="true" InputType="InputType.Number" />
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddItemToCart" Class="mt-2">Send Request</MudButton>
-            @if (!string.IsNullOrEmpty(addItemResponse))
+            @if (addItemCartResult != null)
+            {
+                <MudPaper Class="pa-2 mt-2">
+                    <MudText><b>Cart ID:</b> @addItemCartResult.Id</MudText>
+                    <MudText><b>Customer ID:</b> @addItemCartResult.CustomerId</MudText>
+                    <MudText><b>Created At:</b> @addItemCartResult.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</MudText>
+                    <MudText><b>Updated At:</b> @addItemCartResult.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss")</MudText>
+                    <MudText><b>Items:</b></MudText>
+                    @if (addItemCartResult.Items != null && addItemCartResult.Items.Any())
+                    {
+                        <MudTable Items="addItemCartResult.Items">
+                            <HeaderContent>
+                                <MudTh>SKU</MudTh>
+                                <MudTh>Quantity</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>@context.ItemSku</MudTd>
+                                <MudTd>@context.Quantity</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                    else
+                    {
+                        <MudText>No items in cart.</MudText>
+                    }
+                </MudPaper>
+            }
+            else if (!string.IsNullOrEmpty(addItemResponse))
             {
                 <MudPaper Class="pa-2 mt-2">
                     <MudText>@addItemResponse</MudText>
@@ -255,17 +292,21 @@
     private int addItemSku;
     private int addItemQuantity;
     private string? addItemResponse;
+    private CartDto? addItemCartResult;
     private async Task AddItemToCart()
     {
         addItemResponse = null;
+        addItemCartResult = null;
         try
         {
             var response = await Http.PostAsync(
                 $"api/carts/{addItemCartId}/items/{addItemSku}?quantity={addItemQuantity}", null);
+
             if (response.IsSuccessStatusCode)
             {
-                addItemResponse = await response.Content.ReadAsStringAsync();
-                Snackbar.Add("Item added to cart successfully!", Severity.Success);
+                addItemCartResult = await response.Content.ReadFromJsonAsync<CartDto>();
+                addItemResponse = addItemCartResult != null ? "Item added to cart successfully!" : "Item added, but no cart data returned.";
+                Snackbar.Add(addItemResponse, Severity.Success);
             }
             else
             {

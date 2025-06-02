@@ -1,12 +1,13 @@
 using API.Models.Customers;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using softserve.projectlabs.Shared.DTOs.Cart;
 using System.Threading.Tasks;
 
 namespace API.Controllers.Customers
 {
     /// <summary>
-    /// API Controller for managing Cart operations.
+    /// Controller for managing customer shopping carts.
     /// </summary>
     [ApiController]
     [Route("api/carts")]
@@ -15,9 +16,9 @@ namespace API.Controllers.Customers
         private readonly ICartService _cartService;
 
         /// <summary>
-        /// Constructor with dependency injection for ICartService.
+        /// Initializes a new instance of the <see cref="CartController"/> class.
         /// </summary>
-        /// <param name="cartService">The cart service instance</param>
+        /// <param name="cartService">The cart service.</param>
         public CartController(ICartService cartService)
         {
             _cartService = cartService;
@@ -26,96 +27,108 @@ namespace API.Controllers.Customers
         /// <summary>
         /// Creates a new cart for a customer.
         /// </summary>
-        /// <param name="customerId">The ID of the customer to create the cart for</param>
-        /// <returns>HTTP response with the created cart or error message</returns>
+        /// <param name="customerId">The ID of the customer.</param>
+        /// <returns>The created cart DTO or a bad request result.</returns>
         [HttpPost("customer/{customerId}")]
         public async Task<IActionResult> CreateCart(int customerId)
         {
             var result = await _cartService.CreateCartAsync(customerId);
-            return result.IsSuccess
-                ? Ok(result.Data)
-                : BadRequest(result.ErrorMessage);
+            if (!result.IsSuccess)
+                return BadRequest(result.ErrorMessage);
+
+            var dto = CartMapper.ToDto(result.Data);
+            return Ok(dto);
         }
 
         /// <summary>
-        /// Retrieves a cart by its unique ID.
+        /// Gets a cart by its ID.
         /// </summary>
-        /// <param name="id">Unique identifier of the cart</param>
-        /// <returns>HTTP response with the cart or error message</returns>
+        /// <param name="id">The cart ID.</param>
+        /// <returns>The cart DTO or a not found result.</returns>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCartById(string id)
         {
             var result = await _cartService.GetCartByIdAsync(id);
-            return result.IsSuccess
-                ? Ok(result.Data)
-                : NotFound(result.ErrorMessage);
+            if (!result.IsSuccess)
+                return NotFound(result.ErrorMessage);
+
+            var dto = CartMapper.ToDto(result.Data);
+            return Ok(dto);
         }
 
         /// <summary>
-        /// Retrieves a customer's cart by the customer ID.
+        /// Gets a cart by the customer ID.
         /// </summary>
-        /// <param name="customerId">The ID of the customer whose cart is to be retrieved</param>
-        /// <returns>HTTP response with the customer's cart or error message</returns>
+        /// <param name="customerId">The customer ID.</param>
+        /// <returns>The cart DTO or a not found result.</returns>
         [HttpGet("customer/{customerId}")]
         public async Task<IActionResult> GetCartByCustomerId(int customerId)
         {
             var result = await _cartService.GetCartByCustomerIdAsync(customerId);
-            return result.IsSuccess
-                ? Ok(result.Data)
-                : NotFound(result.ErrorMessage);
+            if (!result.IsSuccess)
+                return NotFound(result.ErrorMessage);
+
+            var dto = CartMapper.ToDto(result.Data);
+            return Ok(dto);
         }
 
         /// <summary>
-        /// Adds an item to a cart.
+        /// Adds an item to the cart or increases its quantity.
         /// </summary>
-        /// <param name="id">The ID of the cart</param>
-        /// <param name="itemSku">The SKU of the item to add</param>
-        /// <param name="quantity">The quantity to add (defaults to 1)</param>
-        /// <returns>HTTP response with the updated cart or error message</returns>
+        /// <param name="id">The cart ID.</param>
+        /// <param name="itemSku">The SKU of the item to add.</param>
+        /// <param name="quantity">The quantity to add (default is 1).</param>
+        /// <returns>The updated cart DTO or a bad request result.</returns>
         [HttpPost("{id}/items/{itemSku}")]
         public async Task<IActionResult> AddItemToCart(string id, int itemSku, [FromQuery] int quantity = 1)
         {
             var result = await _cartService.AddItemToCartAsync(id, itemSku, quantity);
-            return result.IsSuccess
-                ? Ok(result.Data)
-                : BadRequest(result.ErrorMessage);
+            if (!result.IsSuccess)
+                return BadRequest(result.ErrorMessage);
+
+            var dto = CartMapper.ToDto(result.Data);
+            return Ok(dto);
         }
 
         /// <summary>
-        /// Removes an item from a cart.
+        /// Removes an item from the cart or reduces its quantity.
         /// </summary>
-        /// <param name="id">The ID of the cart</param>
-        /// <param name="itemSku">The SKU of the item to remove</param>
-        /// <param name="quantity">The quantity to remove (defaults to 1)</param>
-        /// <returns>HTTP response with the updated cart or error message</returns>
+        /// <param name="id">The cart ID.</param>
+        /// <param name="itemSku">The SKU of the item to remove.</param>
+        /// <param name="quantity">The quantity to remove (default is 1).</param>
+        /// <returns>The updated cart DTO or a bad request result.</returns>
         [HttpDelete("{id}/items/{itemSku}")]
         public async Task<IActionResult> RemoveItemFromCart(string id, int itemSku, [FromQuery] int quantity = 1)
         {
             var result = await _cartService.RemoveItemFromCartAsync(id, itemSku, quantity);
-            return result.IsSuccess
-                ? Ok(result.Data)
-                : BadRequest(result.ErrorMessage);
+            if (!result.IsSuccess)
+                return BadRequest(result.ErrorMessage);
+
+            var dto = CartMapper.ToDto(result.Data);
+            return Ok(dto);
         }
 
         /// <summary>
-        /// Clears all items from a cart.
+        /// Clears all items from the cart.
         /// </summary>
-        /// <param name="id">The ID of the cart to clear</param>
-        /// <returns>HTTP response with the empty cart or error message</returns>
+        /// <param name="id">The cart ID.</param>
+        /// <returns>The cleared cart DTO or a bad request result.</returns>
         [HttpDelete("{id}/clear")]
         public async Task<IActionResult> ClearCart(string id)
         {
             var result = await _cartService.ClearCartAsync(id);
-            return result.IsSuccess
-                ? Ok(result.Data)
-                : BadRequest(result.ErrorMessage);
+            if (!result.IsSuccess)
+                return BadRequest(result.ErrorMessage);
+
+            var dto = CartMapper.ToDto(result.Data);
+            return Ok(dto);
         }
 
         /// <summary>
-        /// Removes a cart by its unique ID.
+        /// Deletes a cart by its ID.
         /// </summary>
-        /// <param name="id">Unique identifier of the cart to remove</param>
-        /// <returns>HTTP response indicating success or failure</returns>
+        /// <param name="id">The cart ID.</param>
+        /// <returns>No content if successful, or not found result.</returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCart(string id)
         {
@@ -126,10 +139,10 @@ namespace API.Controllers.Customers
         }
 
         /// <summary>
-        /// Calculates the total price of all items in a cart.
+        /// Gets the total price of all items in the cart.
         /// </summary>
-        /// <param name="id">The ID of the cart</param>
-        /// <returns>HTTP response with the cart total or error message</returns>
+        /// <param name="id">The cart ID.</param>
+        /// <returns>The total price or a not found result.</returns>
         [HttpGet("{id}/total")]
         public async Task<IActionResult> GetCartTotal(string id)
         {

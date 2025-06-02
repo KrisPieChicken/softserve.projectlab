@@ -14,6 +14,9 @@ public partial class PackageEntity
     public DateTime UpdatedAt { get; set; }
 
     public bool IsDeleted { get; set; }
+    public int CustomerId { get; set; }
+    public virtual CustomerEntity Customer { get; set; }
+
 
     public virtual ICollection<PackageItemEntity> PackageItemEntities { get; set; } = new List<PackageItemEntity>();
 
